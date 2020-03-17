@@ -1,6 +1,7 @@
 #pragma once
 #include <exception>
 #include <string>
+#include "GeometryShape.h"
 
 using namespace std;
 
@@ -30,6 +31,18 @@ public:
 	LineCoincidenceException(string msg);
 	~LineCoincidenceException() throw();
 	virtual const char* what() const throw ();
+	Line coincidence;
+private:
+	string message;
+};
+
+class CircleCoincidenceException : public exception {
+public:
+	CircleCoincidenceException();
+	CircleCoincidenceException(string msg);
+	~CircleCoincidenceException() throw();
+	virtual const char* what() const throw ();
+	Circle coincidence;
 private:
 	string message;
 };

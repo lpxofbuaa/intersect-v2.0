@@ -5,11 +5,10 @@
 using namespace std;
 
 GeometryFactory::GeometryFactory() {
-	rational_points = new unordered_set<RationalPoint*, rational_point_hash, rational_point_equal>();
-	unrational_points = new unordered_set<UnRationalPoint*, unrational_point_hash, unrational_point_equal>();
+	
 }
 
-int GeometryFactory::addLine(int type, int x1, int x2, int y1, int y2) {
+Line GeometryFactory::addLine(int type, int x1, int x2, int y1, int y2) {
 	switch (type)
 	{
 	case DOUBLE_INFINITE_LINE:
@@ -22,40 +21,160 @@ int GeometryFactory::addLine(int type, int x1, int x2, int y1, int y2) {
 	if ((x1 >= MAX_RANGE) || (x2 >= MAX_RANGE) || (y1 >= MAX_RANGE) || (y2 >= MAX_RANGE)) {
 		throw CoordinateRangeException("coordinate is out of range!");
 	}
+	else if ((x1 <= MIN_RANGE) || (x2 <= MIN_RANGE) || (y1 <= MIN_RANGE) || (y2 <= MIN_RANGE)) {
+		throw CoordinateRangeException("coordinate is out of range!");
+	}
 	if ((x1 == x2) && (y1 == y2)) {
 		throw CoordinateCoincidenceException("coordinate coincident!");
 	}
-	double k = (double) INT32_MAX;
-	if (x1 != x2) {
-		k = (y1 - y2) / (x1 - x2);
+	
+	Line l(x1, y1, x2, y2, type);
+	LineMap::iterator value = lines.find(l.k);
+	LineSet::iterator second_value;
+	if (value != lines.end()) {
+		if ((second_value = value->second.find(l)) != value->second.end()) {
+			LineCoincidenceException e("this line has been coincidented!");
+			e.coincidence = *second_value;
+			throw e;
+		}
 	}
-	if (slopes.find(k) != slopes.end()) {
-		throw LineCoincidenceException("this line has been added!");
-	}
+	
 
 	//-------------------------------------------------------------------------
-	slopes.insert(k);
-	lines.insert({ line_counter, Line(x1, y1, x2, y2, type) });
+	for (LineMap::iterator i = lines.begin(); i != lines.end(); ++i) {
+		for (LineSet::iterator j = i->second.begin(); j != i->second.end(); ++j) {
+			Line l2 = *j;
+			line_line_intersect(l2, l);
+		}
+	}
+	for (CircleSet::iterator i = circles.begin(); i != circles.end(); ++i) {
+		Circle c2 = *i;
+		line_circle_intersect(l, c2);
+	}
+
+	value->second.insert(l);
+	return l;
 }
 
-void GeometryFactory::feed(Line &l) {
-	for (vector<Line>::iterator i = lines.begin(); i != lines.end(); ++i) {
-		line_line_intersect(*i, l);
+Circle GeometryFactory::addCircle(int x, int y, int r) {
+	if (r <= 0) {
+		throw NegativeRadiusException("radius of circle is illegal!");
 	}
-	for (vector<Circle>::iterator i = circles.begin(); i != circles.end(); ++i) {
-		line_circle_intersect(l, *i);
+	if ((x >= MAX_RANGE) || (y >= MAX_RANGE) || (r >= MAX_RANGE)) {
+		throw CoordinateRangeException("coordinate is out of range!");
 	}
-	lines.push_back(l);
+	else if ((x <= MIN_RANGE) || (y <= MIN_RANGE) || (r <= MIN_RANGE)) {
+		throw CoordinateRangeException("coordinate is out of range!");
+	}
+	Circle c(x, y, r);
+	CircleSet::iterator value;
+	if ((value = circles.find(c)) != circles.end()) {
+		CircleCoincidenceException e("this circle has been added!");
+		e.coincidence = *value;
+		throw e;
+	}
+
+	//---------------------------------------------------------------------------
+	for (LineMap::iterator i = lines.begin(); i != lines.end(); ++i) {
+		for (LineSet::iterator j = i->second.begin(); j != i->second.end(); ++j) {
+			Line l2 = *j;
+			line_circle_intersect(l2, c);
+		}
+	}
+	for (CircleSet::iterator i = circles.begin(); i != circles.end(); ++i) {
+		Circle c2 = *i;
+		circle_circle_intersect(c2, c);
+	}
+
+	circles.insert(c);
+	return c;
 }
 
-void GeometryFactory::feed(Circle &c) {
-	for (vector<Line>::iterator i = lines.begin(); i != lines.end(); ++i) {
-		line_circle_intersect(*i, c);
+int GeometryFactory::removeLine(Line &l) {
+	vector<RationalPoint*> to_delete_rational_points;
+	for (RationalPointMap::iterator i = rational_points.begin(); i != rational_points.end(); ++i) {
+		if (l.k.k == INT32_MAX && i->first->x.equals(RationalNumber(l.x1, 1))) {
+			// k not exists
+			to_delete_rational_points.push_back(i->first);
+		}
+		else if (l.k.k != INT32_MAX) {
+			// k exists
+			RationalNumber tmp_x = i->first->x;
+			RationalNumber tmp_y = i->first->y;
+
+			RationalNumber k(l.y1 - l.y2, l.x1 - l.x2);
+			RationalNumber b(RationalNumber(l.x1*l.y2 - l.x2*l.y1, l.x1 - l.x2));
+			// tmp_y = k * tmp_x + b
+			if (tmp_x.mult(k).add(b).equals(tmp_y)) {
+				to_delete_rational_points.push_back(i->first);
+			}
+		}
 	}
-	for (vector<Circle>::iterator i = circles.begin(); i != circles.end(); ++i) {
-		circle_circle_intersect(c, *i);
+	for (vector<RationalPoint*>::iterator i = to_delete_rational_points.begin(); i != to_delete_rational_points.end(); ++i) {
+		decrease_rational_point(*i);
 	}
-	circles.push_back(c);
+	//--------------------------------------------------------------------------------
+	vector<UnRationalPoint*> to_delete_unrational_points;
+	double_equal doubleequal;
+	for (UnRationalPointMap::iterator i = unrational_points.begin(); i != unrational_points.end(); ++i) {
+		if (l.k.k == INT32_MAX && doubleequal((double)l.x1, i->first->x)) {
+			// k not exists
+			to_delete_unrational_points.push_back(i->first);
+		}
+		else if (l.k.k != INT32_MAX) {
+			// k exists
+
+			double k = (l.y1 - l.y2)/(l.x1 - l.x2);
+			double b = (l.x1*l.y2 - l.x2*l.y1)/ (l.x1 - l.x2);
+			// y = k * x + b
+			if (doubleequal(k*i->first->x + b, i->first->y)) {
+				to_delete_unrational_points.push_back(i->first);
+			}
+		}
+	}
+	for (vector<UnRationalPoint*>::iterator i = to_delete_unrational_points.begin(); i != to_delete_unrational_points.end(); ++i) {
+		decrease_unrational_point(*i);
+	}
+}
+
+void GeometryFactory::increase_rational_point(RationalPoint* point) {
+	RationalPointMap::iterator value = rational_points.find(point);
+	if (value != rational_points.end()) {
+		value->second += 1;
+	}
+	else {
+		rational_points[point] = 1;
+	}
+}
+
+void GeometryFactory::increase_unrational_point(UnRationalPoint* point) {
+	UnRationalPointMap::iterator value = unrational_points.find(point);
+	if (value != unrational_points.end()) {
+		value->second += 1;
+	}
+	else {
+		unrational_points[point] = 1;
+	}
+}
+
+void GeometryFactory::decrease_rational_point(RationalPoint* p) {
+	RationalPointMap::iterator value = rational_points.find(p);
+	if (value != rational_points.end()) {
+		value->second -= 1;
+		if (value->second == 0) {
+			rational_points.erase(value);
+		}
+	}
+}
+
+void GeometryFactory::decrease_unrational_point(UnRationalPoint* p) {
+	UnRationalPointMap::iterator value = unrational_points.find(p);
+	if (value != unrational_points.end()) {
+		value->second -= 1;
+		if (value->second == 0) {
+			unrational_points.erase(value);
+		}
+	}
 }
 
 void GeometryFactory::line_line_intersect(Line &l1, Line &l2) {
@@ -76,7 +195,9 @@ void GeometryFactory::line_line_intersect(Line &l1, Line &l2) {
 				, a * (l2.x1 - l2.x2));
 		}
 		//cout << (l1.a_y - l1.b_y) * b + (l1.a_x * l1.b_y - l1.a_y * l1.b_x) * a << "/" << a * (l1.a_x - l1.b_x) << endl;
-		rational_points->insert(new RationalPoint(new_x, new_y));
+
+		increase_rational_point(new RationalPoint(new_x, new_y));
+		
 	}
 }
 
@@ -91,15 +212,15 @@ void GeometryFactory::line_circle_intersect(Line &l, Circle &c) {
 			RationalNumber x(q, 1);
 			RationalNumber y1(q + c.b, 1);
 			RationalNumber y2(-q + c.b, 1);
-			rational_points->insert(new RationalPoint(x, y1));
-			rational_points->insert(new RationalPoint(x, y2));
+			increase_rational_point(new RationalPoint(x, y1));
+			increase_rational_point(new RationalPoint(x, y2));
 		}
 		else {
 			double x = sqrt(tmp);
 			double y1 = sqrt(tmp) + c.b;
 			double y2 = -sqrt(tmp) + c.b;
-			unrational_points->insert(new UnRationalPoint(x, y1));
-			unrational_points->insert(new UnRationalPoint(x, y2));
+			increase_unrational_point(new UnRationalPoint(x, y1));
+			increase_unrational_point(new UnRationalPoint(x, y2));
 		}
 		return;
 	}
@@ -130,8 +251,8 @@ void GeometryFactory::line_circle_intersect(Line &l, Circle &c) {
 		aa = tmp_1.mult(-2).sub(delta);
 		RationalNumber x2 = aa.div(bb);
 		RationalNumber y2 = k.mult(x2).add(b);
-		rational_points->insert(new RationalPoint(x1, y1));
-		rational_points->insert(new RationalPoint(x2, y2));
+		increase_rational_point(new RationalPoint(x1, y1));
+		increase_rational_point(new RationalPoint(x2, y2));
 	}
 	else {
 		double t1 = tmp_1.toDouble();
@@ -144,8 +265,8 @@ void GeometryFactory::line_circle_intersect(Line &l, Circle &c) {
 		double x2 = (-2 * t1 - d) / (2 * t2);
 		double y2 = k.toDouble() * x2 + b.toDouble();
 
-		unrational_points->insert(new UnRationalPoint(x1, y1));
-		unrational_points->insert(new UnRationalPoint(x2, y2));
+		increase_unrational_point(new UnRationalPoint(x1, y1));
+		increase_unrational_point(new UnRationalPoint(x2, y2));
 	}
 
 
@@ -180,8 +301,8 @@ void GeometryFactory::circle_circle_intersect(Circle &c1, Circle &c2) {
 		aa = tmp_1.mult(-2).sub(delta);
 		RationalNumber x2 = aa.div(bb);
 		RationalNumber y2 = k.mult(x2).add(b);
-		rational_points->insert(new RationalPoint(x1, y1));
-		rational_points->insert(new RationalPoint(x2, y2));
+		increase_rational_point(new RationalPoint(x1, y1));
+		increase_rational_point(new RationalPoint(x2, y2));
 	}
 	else {
 		double t1 = tmp_1.toDouble();
@@ -194,15 +315,7 @@ void GeometryFactory::circle_circle_intersect(Circle &c1, Circle &c2) {
 		double x2 = (-2 * t1 - d) / (2 * t2);
 		double y2 = k.toDouble() * x2 + b.toDouble();
 
-		unrational_points->insert(new UnRationalPoint(x1, y1));
-		unrational_points->insert(new UnRationalPoint(x2, y2));
+		increase_unrational_point(new UnRationalPoint(x1, y1));
+		increase_unrational_point(new UnRationalPoint(x2, y2));
 	}
-}
-
-int GeometryFactory::getPointCount() {
-	return rational_points->size() + unrational_points->size();
-}
-
-bool GeometryFactory::containsPoint(RationalPoint *a) {
-	return rational_points->find(a) != rational_points->end();
 }

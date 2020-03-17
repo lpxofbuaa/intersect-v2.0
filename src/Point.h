@@ -8,10 +8,9 @@
 using namespace std;
 
 class RationalPoint {
-private:
+public:
 	RationalNumber x;
 	RationalNumber y;
-public:
 	size_t hashcode;
 	RationalPoint();
 	RationalPoint(RationalNumber &x, RationalNumber &y);
