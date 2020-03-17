@@ -12,9 +12,9 @@ class Reader {
 private:
 	ifstream reader;
 	ofstream writer;
-	GeometryStatistic *g;
+	GeometryFactory *g;
 public:
-	Reader(string in_file, string out_file, GeometryStatistic *g);
+	Reader(string in_file, string out_file, GeometryFactory *g);
 	vector<Line> lines;
 	vector<Circle> circles;
 	void read();

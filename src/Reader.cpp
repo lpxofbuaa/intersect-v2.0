@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Reader.h"
 
-Reader::Reader(string in_file, string out_file, GeometryStatistic *gg) {
+Reader::Reader(string in_file, string out_file, GeometryFactory *gg) {
 	reader = ifstream(in_file);
 	writer = ofstream(out_file);
 	g = gg;

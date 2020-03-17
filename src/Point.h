@@ -7,11 +7,6 @@
 
 using namespace std;
 
-class Point {
-public:
-	double x, y;
-};
-
 class RationalPoint {
 private:
 	RationalNumber x;
@@ -32,18 +27,33 @@ public:
 	UnRationalPoint(double a, double b);
 };
 
-struct my_hash {
+class Point {
+public:
+	double x, y;
+	Point();
+	Point(double a, double b);
+};
+
+struct rational_point_hash {
 	size_t operator()(RationalPoint* const& a) const;
 };
 
-struct my_equal {
+struct rational_point_equal {
 	bool operator()(RationalPoint* const& a, RationalPoint* const& b) const;
 };
 
-struct double_hash {
+struct unrational_point_hash {
 	size_t operator()(UnRationalPoint* const& a) const;
 };
 
-struct double_equal {
+struct unrational_point_equal {
 	bool operator()(UnRationalPoint* const& a, UnRationalPoint* const& b) const;
+};
+
+struct double_hash {
+	size_t operator()(double const& a) const;
+};
+
+struct double_equal {
+	bool operator()(double const& a, double const& b) const;
 };

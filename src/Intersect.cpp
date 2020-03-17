@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
 		if (argv[3][0] == '-' && argv[3][1] == 'o') {
 			out_file = argv[4];
 		}
-		GeometryStatistic *statistic = new GeometryStatistic();
+		GeometryFactory *statistic = new GeometryFactory();
 		Reader read(in_file, out_file, statistic);
 		
 		read.read();
