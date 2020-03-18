@@ -9,10 +9,12 @@ Line::Line(int x1, int y1, int x2, int y2, int type) {
 	this->y2 = y2;
 	this->type = type;
 	if (x1 == x2) {
-		this->k = LineKey(INT32_MAX, x1);
+		this->k = LineKey((double) INT32_MAX, (double) x1);
 	}
 	else {
-		this->k = LineKey((y1 - y2) / (x1 - x2), (x1*y2 - x2 * y1) / (x1 - x2));
+		double k0 = double(y1 - y2) / double(x1 - x2);
+		double b = double(x1 * y2 - x2 * y1) / double(x1 - x2);
+		this->k = LineKey(k0, b);
 	}
 	switch (type)
 	{
@@ -100,17 +102,21 @@ bool line_key_equal::operator()(LineKey const& a, LineKey const& b) const {
 	return fabs(a.k - b.k) < 1e-10 && fabs(a.b - b.b) < 1e-10;
 }
 
+/*
 size_t line_hash::operator()(Line const& a) const {
 	line_key_hash hashcode;
 	size_t h = hashcode.operator()(a.k);
 	size_t h2 = hash<int>{}(a.type);
 	return (h << 5u) ^ h2;
 }
+*/
 
+/*
 bool line_equal::operator()(Line const& a, Line const& b) const {
 	line_key_equal key_equal;
 	return key_equal.operator()(a.k, b.k) && a.type == b.type;
 }
+*/
 
 size_t circle_hash::operator()(Circle const & a) const
 {
@@ -125,6 +131,10 @@ bool circle_equal::operator()(Circle const & a, Circle const & b) const
 	return a.a == b.a && a.b == b.b && a.r == b.r;
 }
 
+/*
+ * 判断两条Line对象是否出现了冲突（重合的线段部分）
+ * Method: 将线段投影在坐标轴上（默认X轴），使用线段重合算法进行判断。
+*/
 bool line_coincident(Line & l1, Line & l2)
 {
 	line_key_equal key_equal;

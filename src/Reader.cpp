@@ -19,6 +19,16 @@ void Reader::read() {
 			g->addLine(DOUBLE_INFINITE_LINE, x1, x2, y1, y2);
 			//lines.push_back(Line(x1, y1, x2, y2));
 		}
+		else if (type == 'R') {
+			int x1, y1, x2, y2;
+			reader >> x1 >> y1 >> x2 >> y2;
+			g->addLine(SINGLE_INFINITE_LINE, x1, x2, y1, y2);
+		}
+		else if (type == 'S') {
+			int x1, y1, x2, y2;
+			reader >> x1 >> y1 >> x2 >> y2;
+			g->addLine(LIMITED_LINE, x1, x2, y1, y2);
+		}
 		else if (type == 'C') {
 			int a, b, r;
 			reader >> a >> b >> r;

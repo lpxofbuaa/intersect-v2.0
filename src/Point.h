@@ -27,6 +27,7 @@ public:
 	bool equals(const UnRationalPoint &b) const;
 };
 
+// 核心模块交点的对外对象。
 class Point {
 public:
 	double x, y;

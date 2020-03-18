@@ -5,7 +5,7 @@
 using namespace std;
 
 RationalNumber::RationalNumber(long long n, long long m) {
-	long long sign = (n * m >= 0) ? 1 : -1;
+	int sign = ((n >= 0 && m >= 0)||(n <= 0 && m <= 0)) ? 1 : -1;
 	n = abs(n);
 	m = abs(m);
 	long long before_n = n;
@@ -72,34 +72,34 @@ bool RationalNumber::smaller(long long b) const
 }
 
 RationalNumber RationalNumber::add(RationalNumber &b) const {
-	return RationalNumber(molecule*b.denominator + b.molecule*denominator, denominator*b.denominator);
+	return RationalNumber(this->molecule * b.denominator + b.molecule * this->denominator, this->denominator * b.denominator);
 }
 
 RationalNumber RationalNumber::sub(RationalNumber &b) const {
-	return RationalNumber(molecule*b.denominator - b.molecule*denominator, denominator*b.denominator);
+	return RationalNumber(this->molecule * b.denominator - b.molecule * this->denominator, this->denominator * b.denominator);
 }
 
 RationalNumber RationalNumber::mult(RationalNumber &b) const {
-	return RationalNumber(molecule*b.molecule, denominator*b.denominator);
+	return RationalNumber(this->molecule * b.molecule, this->denominator * b.denominator);
 }
 
 RationalNumber RationalNumber::div(RationalNumber &b) const {
-	return RationalNumber(molecule*b.denominator, denominator*b.molecule);
+	return RationalNumber(this->molecule * b.denominator, this->denominator * b.molecule);
 }
 
-RationalNumber RationalNumber::add(int b) const {
+RationalNumber RationalNumber::add(long long b) const {
 	return RationalNumber(molecule + denominator * b, denominator);
 }
 
-RationalNumber RationalNumber::sub(int b) const {
+RationalNumber RationalNumber::sub(long long b) const {
 	return RationalNumber(molecule - denominator * b, denominator);
 }
 
-RationalNumber RationalNumber::mult(int b) const {
+RationalNumber RationalNumber::mult(long long b) const {
 	return RationalNumber(molecule * b, denominator);
 }
 
-RationalNumber RationalNumber::div(int b) const {
+RationalNumber RationalNumber::div(long long b) const {
 	return RationalNumber(molecule, denominator * b);
 }
 
@@ -107,8 +107,17 @@ RationalNumber RationalNumber::Sqrt() const {
 	return RationalNumber((long long) sqrt(molecule), (long long) sqrt(denominator));
 }
 
+
+/*
+ * 判断此份数是否可被整型开方。
+ * HINT：负数不可以被开方。
+ */
 bool RationalNumber::canSqrt() const {
-	return sqrt(molecule)*sqrt(molecule) == molecule && sqrt(denominator)*sqrt(denominator) == denominator;
+	if (molecule < 0)
+		return false;
+	long long sqrt_molecule = (long long)sqrt(molecule);
+	long long sqrt_denominator = (long long)sqrt(denominator);
+	return sqrt_molecule * sqrt_molecule == molecule && sqrt_denominator * sqrt_denominator == denominator;
 }
 
 bool RationalNumber::sign() const {

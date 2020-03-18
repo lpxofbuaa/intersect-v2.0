@@ -6,6 +6,9 @@
 
 using namespace std;
 
+/*
+ * 坐标范围异常 For ADD
+*/
 class CoordinateRangeException : public exception {
 public:
 	CoordinateRangeException();
@@ -16,6 +19,9 @@ private:
 	string message;
 };
 
+/*
+ * Line型坐标重合冲突异常 For ADD
+*/
 class CoordinateCoincidenceException : public exception {
 public:
 	CoordinateCoincidenceException();
@@ -26,6 +32,13 @@ private:
 	string message;
 };
 
+/*
+ * Line型几何对象冲突异常 For ADD
+ *       直线      射线      线段    
+ * 直线   x         x         x
+ * 射线   x         o         o
+ * 线段   x         o         o
+*/
 class LineCoincidenceException : public exception {
 public:
 	LineCoincidenceException();
@@ -37,6 +50,9 @@ private:
 	string message;
 };
 
+/*
+ * Circle型几何对象冲突异常 For ADD
+*/
 class CircleCoincidenceException : public exception {
 public:
 	CircleCoincidenceException();
@@ -48,6 +64,9 @@ private:
 	string message;
 };
 
+/*
+ * Circle型几何对象参数非法异常 For ADD
+*/
 class NegativeRadiusException : public exception {
 public:
 	NegativeRadiusException();
@@ -58,6 +77,9 @@ private:
 	string message;
 };
 
+/*
+ * 未定义的Line型的具体类型未知异常 For REMOVE
+*/
 class UndefinedLineException : public exception {
 public:
 	UndefinedLineException();
@@ -68,6 +90,10 @@ private:
 	string message;
 };
 
+/*
+ * todo: 与UndefinedLineException的关系。
+ * 未定义的几何对象异常 For REMOVE
+*/
 class ObjectNotFoundException : public exception {
 public:
 	ObjectNotFoundException();
