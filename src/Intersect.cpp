@@ -10,15 +10,15 @@ using namespace std;
 int main(int argc, char* argv[])
 {
 
-	if (argc == 5) {
-		string in_file;
-		string out_file;
-		if (argv[1][0] == '-' && argv[1][1] == 'i') {
+	if (argc != 5) {
+		string in_file = "input.txt";
+		string out_file = "output.txt";
+		/*if (argv[1][0] == '-' && argv[1][1] == 'i') {
 			in_file = argv[2];
 		}
 		if (argv[3][0] == '-' && argv[3][1] == 'o') {
 			out_file = argv[4];
-		}
+		}*/
 		GeometryFactory *statistic = new GeometryFactory();
 		Reader read(in_file, out_file, statistic);
 		

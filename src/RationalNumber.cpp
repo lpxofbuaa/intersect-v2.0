@@ -4,7 +4,6 @@
 
 using namespace std;
 
-
 RationalNumber::RationalNumber(long long n, long long m) {
 	long long sign = (n * m >= 0) ? 1 : -1;
 	n = abs(n);
@@ -40,6 +39,13 @@ string RationalNumber::toString() const {
 
 double RationalNumber::toDouble() const {
 	return (double) molecule / (double) denominator;
+}
+
+size_t RationalNumber::hashcode() const
+{
+	size_t h1 = hash<long long>{}(molecule);
+	size_t h2 = hash<long long>{}(denominator);
+	return h1 ^ (h2 << 1u);
 }
 
 bool RationalNumber::equals(const RationalNumber &b) const {

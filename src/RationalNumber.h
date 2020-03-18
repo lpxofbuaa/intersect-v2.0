@@ -14,6 +14,7 @@ public:
 	RationalNumber(long long n, long long m);
 	string toString() const;
 	double toDouble() const;
+	size_t hashcode() const;
 	bool equals(const RationalNumber &b) const;
 	bool equals(long long b) const;
 	RationalNumber add(RationalNumber &b) const;

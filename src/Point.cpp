@@ -8,7 +8,7 @@ using namespace std;
 RationalPoint::RationalPoint(RationalNumber &x, RationalNumber &y) {
 	this->x = x;
 	this->y = y;
-	this->hashcode = hash<string>{}(this->toString());
+	this->hashcode = x.hashcode() ^ (y.hashcode() << 1);
 	//cout << toString() << endl;
 }
 

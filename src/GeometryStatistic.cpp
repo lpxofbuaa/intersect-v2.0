@@ -235,7 +235,7 @@ vector<Point> GeometryFactory::getPoints()
 
 int GeometryFactory::getPointsCount()
 {
-	return rational_points.size() + unrational_points.size();
+	return (int)(rational_points.size() + unrational_points.size());
 }
 
 void GeometryFactory::increase_rational_point(RationalPoint* point) {
