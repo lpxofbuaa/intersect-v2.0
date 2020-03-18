@@ -34,6 +34,10 @@ private:
 	inline void increase_unrational_point(UnRationalPoint* p);
 	inline void decrease_rational_point(RationalPoint* p);
 	inline void decrease_unrational_point(UnRationalPoint* p);
+	inline bool rational_point_in_line_range(RationalPoint* p, Line &l);
+	inline bool unrational_point_in_line_range(UnRationalPoint* p, Line &l);
+	inline bool rational_point_on_circle(RationalPoint* p, Circle &c);
+	inline bool unrational_point_on_circle(UnRationalPoint* p, Circle &c);
 	void removeLine(Line &l);
 	void removeCircle(Circle &c);
 public:

@@ -10,9 +10,8 @@ public:
 };
 
 class Line {
-private:
-	int x_min, x_max, y_min, y_max;
 public:
+	int x_min, x_max, y_min, y_max;
 	int x1, y1, x2, y2;
 	int type;
 	LineKey k;

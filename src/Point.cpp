@@ -37,6 +37,12 @@ UnRationalPoint::UnRationalPoint(double a, double b) {
 	y = b;
 }
 
+bool UnRationalPoint::equals(const UnRationalPoint & b) const
+{
+	double_equal equals;
+	return equals(x, b.x) && equals(y, b.y);
+}
+
 size_t unrational_point_hash::operator()(UnRationalPoint* const& a) const {
 	long long x1 = (long long) floor(a->x * 1e10);
 	long long y1 = (long long) floor(a->y * 1e10);

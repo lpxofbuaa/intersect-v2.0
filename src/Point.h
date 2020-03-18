@@ -24,6 +24,7 @@ public:
 	double y;
 	UnRationalPoint();
 	UnRationalPoint(double a, double b);
+	bool equals(const UnRationalPoint &b) const;
 };
 
 class Point {

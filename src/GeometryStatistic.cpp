@@ -121,7 +121,9 @@ void GeometryFactory::removeLine(Line &l) {
 	for (RationalPointMap::iterator i = rational_points.begin(); i != rational_points.end(); ++i) {
 		if (l.k.k == INT32_MAX && i->first->x.equals(RationalNumber(l.x1, 1))) {
 			// k not exists
-			to_delete_rational_points.push_back(i->first);
+			if (rational_point_in_line_range(i->first, l)) {
+				to_delete_rational_points.push_back(i->first);
+			}
 		}
 		else if (l.k.k != INT32_MAX) {
 			// k exists
@@ -132,7 +134,9 @@ void GeometryFactory::removeLine(Line &l) {
 			RationalNumber b(RationalNumber(l.x1*l.y2 - l.x2*l.y1, l.x1 - l.x2));
 			// tmp_y = k * tmp_x + b
 			if (tmp_x.mult(k).add(b).equals(tmp_y)) {
-				to_delete_rational_points.push_back(i->first);
+				if (rational_point_in_line_range(i->first, l)) {
+					to_delete_rational_points.push_back(i->first);
+				}
 			}
 		}
 	}
@@ -145,7 +149,9 @@ void GeometryFactory::removeLine(Line &l) {
 	for (UnRationalPointMap::iterator i = unrational_points.begin(); i != unrational_points.end(); ++i) {
 		if (l.k.k == INT32_MAX && doubleequal((double)l.x1, i->first->x)) {
 			// k not exists
-			to_delete_unrational_points.push_back(i->first);
+			if (unrational_point_in_line_range(i->first, l)) {
+				to_delete_unrational_points.push_back(i->first);
+			}
 		}
 		else if (l.k.k != INT32_MAX) {
 			// k exists
@@ -154,7 +160,9 @@ void GeometryFactory::removeLine(Line &l) {
 			double b = (l.x1*l.y2 - l.x2*l.y1)/ (l.x1 - l.x2);
 			// y = k * x + b
 			if (doubleequal(k*i->first->x + b, i->first->y)) {
-				to_delete_unrational_points.push_back(i->first);
+				if (unrational_point_in_line_range(i->first, l)) {
+					to_delete_unrational_points.push_back(i->first);
+				}
 			}
 		}
 	}
@@ -278,6 +286,78 @@ void GeometryFactory::decrease_unrational_point(UnRationalPoint* p) {
 	}
 }
 
+inline bool GeometryFactory::rational_point_in_line_range(RationalPoint * p, Line & l)
+{
+	switch (l.type)
+	{
+	case DOUBLE_INFINITE_LINE:
+		return true;
+	case SINGLE_INFINITE_LINE:
+		if (l.x1 != l.x2) {
+			if (l.x2 > l.x1) {
+				return p->x.bigger(l.x1) || p->x.equals(l.x1);
+			}
+			else {
+				return p->x.smaller(l.x1) || p->x.equals(l.x1);
+			}
+		}
+		else {
+			if (l.y2 > l.y1) {
+				return p->y.bigger(l.y1) || p->y.equals(l.y1);
+			}
+			else {
+				return p->y.smaller(l.y1) || p->y.equals(l.y1);
+			}
+		}
+	case LIMITED_LINE:
+		if (l.x1 != l.x2) {
+			return (p->x.bigger(l.x_min) && p->x.smaller(l.x_max)) || p->x.equals(l.x1) || p->x.equals(l.x2);
+		}
+		else {
+			return (p->y.bigger(l.y_min) && p->y.smaller(l.y_max)) || p->y.equals(l.y1) || p->y.equals(l.y2);
+		}
+	default:
+		break;
+	}
+	return false;
+}
+
+inline bool GeometryFactory::unrational_point_in_line_range(UnRationalPoint * p, Line & l)
+{
+	switch (l.type)
+	{
+	case DOUBLE_INFINITE_LINE:
+		return true;
+	case SINGLE_INFINITE_LINE:
+		if (l.x1 != l.x2) {
+			if (l.x2 > l.x1) {
+				return p->x >= l.x1;
+			}
+			else {
+				return p->x <= l.x1;
+			}
+		}
+		else {
+			if (l.y2 > l.y1) {
+				return p->y >= l.y1;
+			}
+			else {
+				return p->y <= l.y1;
+			}
+		}
+	case LIMITED_LINE:
+		if (l.x1 != l.x2) {
+			return p->x >= l.x_min && p->x <= l.x_max;
+		}
+		else {
+			return p->y >= l.y_min && p->y <= l.y_max;
+		}
+	default:
+		break;
+	}
+	return false;
+}
+
 void GeometryFactory::line_line_intersect(Line &l1, Line &l2) {
 	RationalNumber new_x;
 	RationalNumber new_y;
@@ -296,8 +376,10 @@ void GeometryFactory::line_line_intersect(Line &l1, Line &l2) {
 				, a * (l2.x1 - l2.x2));
 		}
 		//cout << (l1.a_y - l1.b_y) * b + (l1.a_x * l1.b_y - l1.a_y * l1.b_x) * a << "/" << a * (l1.a_x - l1.b_x) << endl;
-
-		increase_rational_point(new RationalPoint(new_x, new_y));
+		RationalPoint *p = new RationalPoint(new_x, new_y);
+		if (rational_point_in_line_range(p, l1) && rational_point_in_line_range(p, l2)) {
+			increase_rational_point(p);
+		}
 		
 	}
 }
@@ -313,15 +395,30 @@ void GeometryFactory::line_circle_intersect(Line &l, Circle &c) {
 			RationalNumber x(q, 1);
 			RationalNumber y1(q + c.b, 1);
 			RationalNumber y2(-q + c.b, 1);
-			increase_rational_point(new RationalPoint(x, y1));
-			increase_rational_point(new RationalPoint(x, y2));
+
+			RationalPoint *p1 = new RationalPoint(x, y1);
+			RationalPoint *p2 = new RationalPoint(x, y2);
+			if (rational_point_in_line_range(p1, l)) {
+				increase_rational_point(p1);
+			}
+			if (rational_point_in_line_range(p2, l) && (not p1->equals(*p2))) {
+				increase_rational_point(p2);
+			}
 		}
 		else {
 			double x = sqrt(tmp);
 			double y1 = sqrt(tmp) + c.b;
 			double y2 = -sqrt(tmp) + c.b;
-			increase_unrational_point(new UnRationalPoint(x, y1));
-			increase_unrational_point(new UnRationalPoint(x, y2));
+
+			UnRationalPoint *p1 = new UnRationalPoint(x, y1);
+			UnRationalPoint *p2 = new UnRationalPoint(x, y2);
+			if (unrational_point_in_line_range(p1, l)) {
+				increase_unrational_point(p1);
+			}
+			if (unrational_point_in_line_range(p2, l) && (not p1->equals(*p2))) {
+				increase_unrational_point(p2);
+			}
+			
 		}
 		return;
 	}
@@ -352,8 +449,15 @@ void GeometryFactory::line_circle_intersect(Line &l, Circle &c) {
 		aa = tmp_1.mult(-2).sub(delta);
 		RationalNumber x2 = aa.div(bb);
 		RationalNumber y2 = k.mult(x2).add(b);
-		increase_rational_point(new RationalPoint(x1, y1));
-		increase_rational_point(new RationalPoint(x2, y2));
+	
+		RationalPoint *p1 = new RationalPoint(x1, y1);
+		RationalPoint *p2 = new RationalPoint(x2, y2);
+		if (rational_point_in_line_range(p1, l)) {
+			increase_rational_point(p1);
+		}
+		if (rational_point_in_line_range(p2, l) && (not p1->equals(*p2))) {
+			increase_rational_point(p2);
+		}
 	}
 	else {
 		double t1 = tmp_1.toDouble();
@@ -366,8 +470,14 @@ void GeometryFactory::line_circle_intersect(Line &l, Circle &c) {
 		double x2 = (-2 * t1 - d) / (2 * t2);
 		double y2 = k.toDouble() * x2 + b.toDouble();
 
-		increase_unrational_point(new UnRationalPoint(x1, y1));
-		increase_unrational_point(new UnRationalPoint(x2, y2));
+		UnRationalPoint *p1 = new UnRationalPoint(x1, y1);
+		UnRationalPoint *p2 = new UnRationalPoint(x2, y2);
+		if (unrational_point_in_line_range(p1, l)) {
+			increase_unrational_point(p1);
+		}
+		if (unrational_point_in_line_range(p2, l) && (not p1->equals(*p2))) {
+			increase_unrational_point(p2);
+		}
 	}
 
 
@@ -402,8 +512,12 @@ void GeometryFactory::circle_circle_intersect(Circle &c1, Circle &c2) {
 		aa = tmp_1.mult(-2).sub(delta);
 		RationalNumber x2 = aa.div(bb);
 		RationalNumber y2 = k.mult(x2).add(b);
-		increase_rational_point(new RationalPoint(x1, y1));
-		increase_rational_point(new RationalPoint(x2, y2));
+		RationalPoint *p1 = new RationalPoint(x1, y1);
+		RationalPoint *p2 = new RationalPoint(x2, y2);
+		increase_rational_point(p1);
+		if (not p1->equals(*p2)) {
+			increase_rational_point(p2);
+		}
 	}
 	else {
 		double t1 = tmp_1.toDouble();

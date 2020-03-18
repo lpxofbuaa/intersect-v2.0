@@ -17,6 +17,9 @@ public:
 	size_t hashcode() const;
 	bool equals(const RationalNumber &b) const;
 	bool equals(long long b) const;
+	bool bigger(const RationalNumber &b) const; // a > b?
+	bool bigger(long long b) const; // a > b?
+	bool smaller(long long b) const; // a < b?
 	RationalNumber add(RationalNumber &b) const;
 	RationalNumber sub(RationalNumber &b) const;
 	RationalNumber mult(RationalNumber &b) const;
