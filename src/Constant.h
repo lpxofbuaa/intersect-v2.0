@@ -1,5 +1,5 @@
 #pragma once
-
+#include "stdafx.h"
 #ifndef CONSTANT_H
 
 #define DOUBLE_INFINITE_LINE 1

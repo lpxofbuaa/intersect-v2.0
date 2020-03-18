@@ -16,15 +16,13 @@ void Reader::read() {
 		if (type == 'L') {
 			int x1, y1, x2, y2;
 			reader >> x1 >> y1 >> x2 >> y2;
-			Line l(x1, y1, x2, y2);
-			g->feed(l);
+			g->addLine(x1, x2, y1, y2, DOUBLE_INFINITE_LINE);
 			//lines.push_back(Line(x1, y1, x2, y2));
 		}
 		else if (type == 'C') {
 			int a, b, r;
 			reader >> a >> b >> r;
-			Circle c(a, b, r);
-			g->feed(c);
+			g->addCircle(a, b, r);
 			//circles.push_back(Circle(a, b, r));
 		}
 	}

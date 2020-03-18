@@ -15,6 +15,7 @@ public:
 	string toString() const;
 	double toDouble() const;
 	bool equals(const RationalNumber &b) const;
+	bool equals(long long b) const;
 	RationalNumber add(RationalNumber &b) const;
 	RationalNumber sub(RationalNumber &b) const;
 	RationalNumber mult(RationalNumber &b) const;

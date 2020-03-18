@@ -11,8 +11,9 @@
 
 typedef unordered_map<RationalPoint*, int, rational_point_hash, rational_point_equal> RationalPointMap;
 typedef unordered_map<UnRationalPoint*, int, unrational_point_hash, unrational_point_equal> UnRationalPointMap;
-typedef unordered_set<Line, line_hash, line_equal> LineSet;
-typedef unordered_map<LineKey, LineSet, line_key_hash, line_key_equal> LineMap;
+typedef unordered_map<int, Line> LineIdMap;
+typedef unordered_map<LineKey, LineIdMap, line_key_hash, line_key_equal> LineMap;
+typedef unordered_map<int, Circle> CircleIdMap;
 typedef unordered_set<Circle, circle_hash, circle_equal> CircleSet;
 
 
@@ -22,6 +23,10 @@ private:
 	UnRationalPointMap unrational_points;
 	LineMap lines;
 	CircleSet circles;
+	LineIdMap line_ids;
+	CircleIdMap circle_ids;
+	int line_counter = 1;
+	int circle_counter = 0;
 	void line_line_intersect(Line &l1, Line &l2);
 	void line_circle_intersect(Line &l1, Circle &c1);
 	void circle_circle_intersect(Circle &c1, Circle &c2);
@@ -29,11 +34,15 @@ private:
 	inline void increase_unrational_point(UnRationalPoint* p);
 	inline void decrease_rational_point(RationalPoint* p);
 	inline void decrease_unrational_point(UnRationalPoint* p);
+	void removeLine(Line &l);
+	void removeCircle(Circle &c);
 public:
 	GeometryFactory();
-	Line addLine(int type, int x1, int x2, int y1, int y2); // exception handle
-	Circle addCircle(int x, int y, int r); // exception handle
-	int removeLine(Line &l);
-	int removeCircle(Circle &c);
+	int addLine(int type, int x1, int x2, int y1, int y2); // exception handle
+	int addCircle(int x, int y, int r); // exception handle
+	Line getLine(int id);
+	Circle getCircle(int id);
+	void remove(int id);
 	vector<Point> getPoints();
+	int getPointsCount();
 };

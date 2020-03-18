@@ -8,7 +8,7 @@ GeometryFactory::GeometryFactory() {
 	
 }
 
-Line GeometryFactory::addLine(int type, int x1, int x2, int y1, int y2) {
+int GeometryFactory::addLine(int type, int x1, int x2, int y1, int y2) {
 	switch (type)
 	{
 	case DOUBLE_INFINITE_LINE:
@@ -30,33 +30,40 @@ Line GeometryFactory::addLine(int type, int x1, int x2, int y1, int y2) {
 	
 	Line l(x1, y1, x2, y2, type);
 	LineMap::iterator value = lines.find(l.k);
-	LineSet::iterator second_value;
+	LineIdMap::iterator second_value;
 	if (value != lines.end()) {
-		if ((second_value = value->second.find(l)) != value->second.end()) {
-			LineCoincidenceException e("this line has been coincidented!");
-			e.coincidence = *second_value;
-			throw e;
+		for (second_value = value->second.begin(); second_value != value->second.end(); ++second_value) {
+			if (line_coincident(l, second_value->second)) {
+				LineCoincidenceException e("this line has been coincident!");
+				e.coincidence = second_value->second;
+				throw e;
+			}
 		}
 	}
 	
 
 	//-------------------------------------------------------------------------
 	for (LineMap::iterator i = lines.begin(); i != lines.end(); ++i) {
-		for (LineSet::iterator j = i->second.begin(); j != i->second.end(); ++j) {
-			Line l2 = *j;
-			line_line_intersect(l2, l);
+		for (LineIdMap::iterator j = i->second.begin(); j != i->second.end(); ++j) {
+			line_line_intersect(j->second, l);
 		}
 	}
 	for (CircleSet::iterator i = circles.begin(); i != circles.end(); ++i) {
 		Circle c2 = *i;
 		line_circle_intersect(l, c2);
 	}
-
-	value->second.insert(l);
-	return l;
+	if (value != lines.end()) {
+		value->second.insert({ line_counter, l });
+	}
+	else {
+		lines[l.k].insert({ line_counter, l });
+	}
+	line_ids.insert({ line_counter, l });
+	line_counter += 2;
+	return line_counter - 2;
 }
 
-Circle GeometryFactory::addCircle(int x, int y, int r) {
+int GeometryFactory::addCircle(int x, int y, int r) {
 	if (r <= 0) {
 		throw NegativeRadiusException("radius of circle is illegal!");
 	}
@@ -76,9 +83,8 @@ Circle GeometryFactory::addCircle(int x, int y, int r) {
 
 	//---------------------------------------------------------------------------
 	for (LineMap::iterator i = lines.begin(); i != lines.end(); ++i) {
-		for (LineSet::iterator j = i->second.begin(); j != i->second.end(); ++j) {
-			Line l2 = *j;
-			line_circle_intersect(l2, c);
+		for (LineIdMap::iterator j = i->second.begin(); j != i->second.end(); ++j) {
+			line_circle_intersect(j->second, c);
 		}
 	}
 	for (CircleSet::iterator i = circles.begin(); i != circles.end(); ++i) {
@@ -87,10 +93,30 @@ Circle GeometryFactory::addCircle(int x, int y, int r) {
 	}
 
 	circles.insert(c);
-	return c;
+	circle_ids.insert({ circle_counter, c });
+	circle_counter += 2;
+	return circle_counter - 2;
 }
 
-int GeometryFactory::removeLine(Line &l) {
+Line GeometryFactory::getLine(int id)
+{
+	LineIdMap::iterator i = line_ids.find(id);
+	if (i == line_ids.end()) {
+		throw ObjectNotFoundException("line not found or invalid id!");
+	}
+	return i->second;
+}
+
+Circle GeometryFactory::getCircle(int id)
+{
+	CircleIdMap::iterator i = circle_ids.find(id);
+	if (i == circle_ids.end()) {
+		throw ObjectNotFoundException("circle not found or invalid id!");
+	}
+	return i->second;
+}
+
+void GeometryFactory::removeLine(Line &l) {
 	vector<RationalPoint*> to_delete_rational_points;
 	for (RationalPointMap::iterator i = rational_points.begin(); i != rational_points.end(); ++i) {
 		if (l.k.k == INT32_MAX && i->first->x.equals(RationalNumber(l.x1, 1))) {
@@ -135,6 +161,81 @@ int GeometryFactory::removeLine(Line &l) {
 	for (vector<UnRationalPoint*>::iterator i = to_delete_unrational_points.begin(); i != to_delete_unrational_points.end(); ++i) {
 		decrease_unrational_point(*i);
 	}
+}
+
+void GeometryFactory::removeCircle(Circle &c) {
+	vector<RationalPoint*> to_delete_rational_points;
+	for (RationalPointMap::iterator i = rational_points.begin(); i != rational_points.end(); ++i) {
+		RationalNumber delta_x = i->first->x.sub(c.a);
+		RationalNumber delta_y = i->first->y.sub(c.b);
+		delta_x = delta_x.mult(delta_x);
+		delta_y = delta_y.mult(delta_y);
+		RationalNumber delta = delta_x.add(delta_y);
+		if (delta.canSqrt() && delta.equals(c.r * c.r)) {
+			to_delete_rational_points.push_back(i->first);
+		}
+	}
+	for (vector<RationalPoint*>::iterator i = to_delete_rational_points.begin(); i != to_delete_rational_points.end(); ++i) {
+		decrease_rational_point(*i);
+	}
+	//--------------------------------------------------------------------------------
+	vector<UnRationalPoint*> to_delete_unrational_points;
+	double_equal equals;
+	for (UnRationalPointMap::iterator i = unrational_points.begin(); i != unrational_points.end(); ++i) {
+		if (equals.operator()((i->first->x - c.a)*(i->first->x - c.a) + (i->first->y - c.b)*(i->first->y - c.b), c.r*c.r)) {
+			to_delete_unrational_points.push_back(i->first);
+		}
+	}
+	for (vector<UnRationalPoint*>::iterator i = to_delete_unrational_points.begin(); i != to_delete_unrational_points.end(); ++i) {
+		decrease_unrational_point(*i);
+	}
+}
+
+void GeometryFactory::remove(int id) {
+	if (id % 2 != 0) {
+		LineIdMap::iterator ptr = line_ids.find(id);
+		if (ptr == line_ids.end()) {
+			throw ObjectNotFoundException("line not found or invalid id!");
+		}
+		removeLine(ptr->second);
+		LineMap::iterator root_ptr = lines.find(ptr->second.k);
+		if (root_ptr != lines.end()) {
+			root_ptr->second.erase(id);
+			if (root_ptr->second.empty()) {
+				lines.erase(root_ptr);
+			}
+		}
+		line_ids.erase(ptr);
+	}
+	else {
+		CircleIdMap::iterator ptr = circle_ids.find(id);
+		if (ptr == circle_ids.end()) {
+			throw ObjectNotFoundException("circle not found or invalid id!");
+		}
+		removeCircle(ptr->second);
+		circles.erase(ptr->second);
+		circle_ids.erase(ptr);
+	}
+}
+
+vector<Point> GeometryFactory::getPoints()
+{
+	vector<Point> re;
+	for (RationalPointMap::iterator i = rational_points.begin(); i != rational_points.end(); ++i) {
+		Point p(i->first->x.toDouble(), i->first->y.toDouble());
+		re.push_back(p);
+	}
+
+	for (UnRationalPointMap::iterator i = unrational_points.begin(); i != unrational_points.end(); ++i) {
+		Point p(i->first->x, i->first->y);
+		re.push_back(p);
+	}
+	return re;
+}
+
+int GeometryFactory::getPointsCount()
+{
+	return rational_points.size() + unrational_points.size();
 }
 
 void GeometryFactory::increase_rational_point(RationalPoint* point) {

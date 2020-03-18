@@ -46,6 +46,10 @@ bool RationalNumber::equals(const RationalNumber &b) const {
 	return this->molecule == b.molecule && b.denominator == this->denominator;
 }
 
+bool RationalNumber::equals(long long b) const {
+	return this->molecule == b * this->denominator;
+}
+
 RationalNumber RationalNumber::add(RationalNumber &b) const {
 	return RationalNumber(molecule*b.denominator + b.molecule*denominator, denominator*b.denominator);
 }

@@ -51,12 +51,19 @@ bool unrational_point_equal::operator()(UnRationalPoint* const& a, UnRationalPoi
 
 size_t double_hash::operator()(double const& a) const {
 	long long x = (long long)floor(a*1e8);
-	return hash<double>{}(x);
+	return hash<long long>{}(x);
 }
 
 bool double_equal::operator()(double const& a, double const& b) const {
 	return fabs(a - b) < 1e-8;
 }
 
+Point::Point()
+{
+}
 
-
+Point::Point(double a, double b)
+{
+	x = a;
+	y = b;
+}

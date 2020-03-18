@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
 		Reader read(in_file, out_file, statistic);
 		
 		read.read();
-		read.write(statistic->getPointCount());
+		read.write(statistic->getPointsCount());
 		//cout << statistic->getPointCount() << endl;
 		//cout << statistic->rational_points->size() << endl;
 		//cout << statistic->unrational_points->size() << endl;

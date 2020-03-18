@@ -14,6 +14,61 @@ Line::Line(int x1, int y1, int x2, int y2, int type) {
 	else {
 		this->k = LineKey((y1 - y2) / (x1 - x2), (x1*y2 - x2 * y1) / (x1 - x2));
 	}
+	switch (type)
+	{
+	case DOUBLE_INFINITE_LINE:
+		x_min = MIN_RANGE;
+		x_max = MAX_RANGE;
+		y_min = MIN_RANGE;
+		y_max = MAX_RANGE;
+		break;
+	case SINGLE_INFINITE_LINE:
+		if (x1 != x2) {
+			if (x2 > x1) {
+				x_max = MAX_RANGE;
+				x_min = x1;
+			}
+			else {
+				x_max = x1;
+				x_min = MIN_RANGE;
+			}
+		}
+		else {
+			if (y2 > y1) {
+				y_max = MAX_RANGE;
+				y_min = y1;
+			}
+			else {
+				y_max = y1;
+				y_min = MIN_RANGE;
+			}
+		}
+		break;
+	case LIMITED_LINE:
+		if (x1 != x2) {
+			if (x1 > x2) {
+				x_max = x1;
+				x_min = x2;
+			}
+			else {
+				x_max = x2;
+				x_min = x1;
+			}
+		}
+		else {
+			if (y1 > y2) {
+				y_max = y1;
+				y_min = y2;
+			}
+			else {
+				y_max = y2;
+				y_min = y1;
+			}
+		}
+		break;
+	default:
+		break;
+	}
 }
 
 Line::Line() {}
@@ -54,39 +109,7 @@ size_t line_hash::operator()(Line const& a) const {
 
 bool line_equal::operator()(Line const& a, Line const& b) const {
 	line_key_equal key_equal;
-	if (key_equal.operator()(a.k, b.k)) {
-		// a and b are infinite line
-		if (a.type == DOUBLE_INFINITE_LINE || b.type == DOUBLE_INFINITE_LINE) {
-			return true;
-		}
-
-		switch (a.type)
-		{
-		case SINGLE_INFINITE_LINE:
-			switch (b.type)
-			{
-			case SINGLE_INFINITE_LINE:
-
-			case LIMITED_LINE:
-
-			default:
-				break;
-			}
-		case LIMITED_LINE:
-			switch (b.type)
-			{
-			case SINGLE_INFINITE_LINE:
-
-			case LIMITED_LINE:
-				
-			default:
-				break;
-			}
-		default:
-			break;
-		}
-	}
-	return false;
+	return key_equal.operator()(a.k, b.k) && a.type == b.type;
 }
 
 size_t circle_hash::operator()(Circle const & a) const
@@ -100,4 +123,22 @@ size_t circle_hash::operator()(Circle const & a) const
 bool circle_equal::operator()(Circle const & a, Circle const & b) const
 {
 	return a.a == b.a && a.b == b.b && a.r == b.r;
+}
+
+bool line_coincident(Line & l1, Line & l2)
+{
+	line_key_equal key_equal;
+	if (not key_equal.operator()(l1.k, l2.k)) {
+		return false;
+	}
+	if (l1.x1 == l1.x2) {
+		int low_max = (l1.y_min > l2.y_min) ? l1.y_min : l2.y_min;
+		int high_min = (l1.y_max > l2.y_max) ? l2.y_max : l1.y_max;
+		return low_max < high_min;
+	}
+	else {
+		int left_max = (l1.x_min > l2.x_min) ? l1.x_min : l2.x_min;
+		int right_min = (l1.x_max > l2.x_max) ? l2.x_max : l1.x_max;
+		return left_max < right_min;
+	}
 }

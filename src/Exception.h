@@ -1,4 +1,5 @@
 #pragma once
+#include "stdafx.h"
 #include <exception>
 #include <string>
 #include "GeometryShape.h"
@@ -62,6 +63,16 @@ public:
 	UndefinedLineException();
 	UndefinedLineException(string msg);
 	~UndefinedLineException() throw();
+	virtual const char* what() const throw ();
+private:
+	string message;
+};
+
+class ObjectNotFoundException : public exception {
+public:
+	ObjectNotFoundException();
+	ObjectNotFoundException(string msg);
+	~ObjectNotFoundException() throw();
 	virtual const char* what() const throw ();
 private:
 	string message;

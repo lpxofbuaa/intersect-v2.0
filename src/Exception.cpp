@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "Exception.h"
 
 CoordinateRangeException::CoordinateRangeException() : message("Error: ") {}
@@ -8,7 +9,7 @@ CoordinateRangeException::~CoordinateRangeException() throw() {}
 
 const char * CoordinateRangeException::what() const throw()
 {
-	return message.c_str;
+	return message.c_str();
 }
 
 //------------------------------------------------------------------------------------------------------
@@ -21,7 +22,7 @@ CoordinateCoincidenceException::~CoordinateCoincidenceException() throw() {}
 
 const char * CoordinateCoincidenceException::what() const throw()
 {
-	return message.c_str;
+	return message.c_str();
 }
 
 //------------------------------------------------------------------------------------------------------
@@ -34,7 +35,7 @@ LineCoincidenceException::~LineCoincidenceException() throw() {}
 
 const char * LineCoincidenceException::what() const throw()
 {
-	return message.c_str;
+	return message.c_str();
 }
 
 //------------------------------------------------------------------------------------------------------
@@ -47,7 +48,7 @@ CircleCoincidenceException::~CircleCoincidenceException() throw() {}
 
 const char * CircleCoincidenceException::what() const throw()
 {
-	return message.c_str;
+	return message.c_str();
 }
 
 //------------------------------------------------------------------------------------------------------
@@ -60,7 +61,7 @@ NegativeRadiusException::~NegativeRadiusException() throw() {}
 
 const char * NegativeRadiusException::what() const throw()
 {
-	return message.c_str;
+	return message.c_str();
 }
 
 //------------------------------------------------------------------------------------------------------
@@ -73,6 +74,16 @@ UndefinedLineException::~UndefinedLineException() throw() {}
 
 const char * UndefinedLineException::what() const throw()
 {
-	return message.c_str;
+	return message.c_str();
 }
 
+ObjectNotFoundException::ObjectNotFoundException() : message("Error: ") {}
+
+ObjectNotFoundException::ObjectNotFoundException(string msg) : message("Error: " + msg) {}
+
+ObjectNotFoundException::~ObjectNotFoundException() throw() {}
+
+const char * ObjectNotFoundException::what() const throw()
+{
+	return message.c_str();
+}
