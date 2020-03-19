@@ -29,11 +29,11 @@ int main(int argc, char* argv[])
 		
 		read.read();
 		read.write(statistic->getPointsCount());
-		cout << statistic->getPointsCount() << endl;
-		auto v = statistic->getPoints();
+		//cout << statistic->getPointsCount() << endl;
+		/*auto v = statistic->getPoints();
 		for (auto i = v.begin(); i != v.end(); ++i) {
 			cout << i->toString() << endl;
-		}
+		}*/
 		//cout << statistic->rational_points->size() << endl;
 		//cout << statistic->unrational_points->size() << endl;
 	}

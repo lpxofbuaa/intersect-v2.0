@@ -9,8 +9,8 @@ using namespace std;
 #include "../Intersect/GeometryShape.h"
 #include "../Intersect/GeometryStatistic.h"
 #include "../Intersect/Point.h"
-#include "../Intersect/RationalNumber.h"
 #include "../Intersect/GeometryCalculator.h"
+#include "../Intersect/DoubleUtils.h"
 #define CHECK Assert::AreEqual 
 
 namespace CoreTest
@@ -18,48 +18,11 @@ namespace CoreTest
 	TEST_CLASS(UnitTest1)
 	{
 	public:
-		
-		TEST_METHOD(TestMethod1)
-		{
-			// TODO: 在此输入测试代码
-			unordered_set<RationalPoint*, rational_point_hash, rational_point_equal> *test = new unordered_set<RationalPoint*, rational_point_hash, rational_point_equal>();
-
-			for (int i = 0; i < 1000; ++i) {
-				RationalNumber *a = new RationalNumber(3, 4);
-				RationalNumber *b = new RationalNumber(6, 800);
-				test->insert(new RationalPoint(*a, *b));
-			}
-			CHECK((int)test->size(), 1);
-		}
-
-		TEST_METHOD(RationalNumberTest)
-		{
-			// TODO: 在此输入测试代码
-			RationalNumber a(-324, 23);
-			RationalNumber b(1, 23);
-			CHECK(true, b.bigger(a));
-			CHECK(false, a.bigger(b));
-			RationalNumber c(-3444, 4);
-			CHECK(true, a.bigger(c));
-			CHECK(false, c.bigger(a));
-			RationalNumber dd(100000, 100000);
-			CHECK(dd.toString(), string("1/1"));
-			RationalNumber f((long long)324345 * (long long)324345, (long long)9998888 * (long long)9998888);
-			//CHECK(f.toString(), string("33"));
-			CHECK(true, f.canSqrt());
-			RationalNumber e((long long)44444444 * (long long)44444444, (long long)888888888 * (long long)888888887);
-			CHECK(false, e.canSqrt());
-			long long g = 34;
-			RationalNumber gg(345, 2);
-			CHECK(true, a.smaller(g));
-			CHECK(true, b.smaller(g));
-			CHECK(true, gg.bigger(g));
-		}
 
 		TEST_METHOD(LineKeyTest)
 		{
 			struct line_key_equal equals;
-			LineKey k((double) (4444444444 - 4444444442) / (5555555555 - 5555555552), (double) (2222222222 - 2222222220) / (5555555555 - 5555555550));
+			LineKey k(((double)4444444444 - 4444444442) / ((double)5555555555 - 5555555552), ((double)2222222222 - 2222222220) / ((double)5555555555 - 5555555550));
 			CHECK((double) 2 / 3, k.k);
 			CHECK((double) 2 / 5, 0.4);
 			CHECK(true, equals(k, LineKey(0.6666666666666666, 0.4)));
@@ -68,22 +31,22 @@ namespace CoreTest
 		TEST_METHOD(LineTest1)
 		{
 			Line l1(344, 56, 3245, 3334, DOUBLE_INFINITE_LINE);
-			CHECK(l1.x_max, MAX_RANGE);
-			CHECK(l1.x_min, MIN_RANGE);
-			CHECK(l1.y_max, MAX_RANGE);
-			CHECK(l1.y_min, MIN_RANGE);
+			CHECK((int)l1.x_max, MAX_RANGE);
+			CHECK((int)l1.x_min, MIN_RANGE);
+			CHECK((int)l1.y_max, MAX_RANGE);
+			CHECK((int)l1.y_min, MIN_RANGE);
 			Line l2(-342, 422, 90, 0, SINGLE_INFINITE_LINE);
-			CHECK(l2.x_max, MAX_RANGE);
-			CHECK(l2.x_min, -342);
+			CHECK((int)l2.x_max, MAX_RANGE);
+			CHECK((int)l2.x_min, -342);
 			Line l3(0, 344, 0, -325, SINGLE_INFINITE_LINE);
-			CHECK(l3.y_max, 344);
-			CHECK(l3.y_min, MIN_RANGE);
+			CHECK((int)l3.y_max, 344);
+			CHECK((int)l3.y_min, MIN_RANGE);
 			Line l4(44532, 332, 564, 999, LIMITED_LINE);
-			CHECK(l4.x_min, 564);
-			CHECK(l4.x_max, 44532);
+			CHECK((int)l4.x_min, 564);
+			CHECK((int)l4.x_max, 44532);
 			Line l5(-432, -3423, -432, 8893, LIMITED_LINE);
-			CHECK(l5.y_max, 8893);
-			CHECK(l5.y_min, -3423);
+			CHECK((int)l5.y_max, 8893);
+			CHECK((int)l5.y_min, -3423);
 		}
 
 		TEST_METHOD(LineTest2)
@@ -115,27 +78,82 @@ namespace CoreTest
 			CHECK(line_coincident(l9, l8), true);
 		}
 
-		TEST_METHOD(HashTest) 
+		TEST_METHOD(DoubleTest)
 		{
-			struct line_key_hash LineKeyHash;
-			struct circle_hash CircleHash;
-			struct rational_point_hash RationalPointHash;
-			// struct unrational_point_hash UnRationalPointHash;
-			LineKey l1((double)2 / 3, (double)6 / 7);
-			LineKey l2((double)12 / 18, (double)606 / 707);
-			CHECK(LineKeyHash(l1), LineKeyHash(l2));
-			LineKey l3((double)9999 / 88888888, (double)9999 / 88887777);
-			LineKey l4((double)9999 / 88888999, (double)9999 / 88887777);
-			CHECK(LineKeyHash(l3) == LineKeyHash(l4), false);
-			Circle a(3, 4, 5);
-			Circle b(3, 4, 5);
-			CHECK(CircleHash(a), CircleHash(b));
-			RationalNumber n1(4, 5);
-			RationalNumber n2(16, 20);
-			RationalPoint *p1 = new RationalPoint(n1, n2);
-			RationalPoint *p2 = new RationalPoint(n2, n1);
-			CHECK(RationalPointHash(p1), RationalPointHash(p2));
+			CHECK(Double::equal(0.20000000000000001, 0.19999999999999991), true);
+			CHECK(Double::hash(0.20000000000000001), Double::hash(0.19999999999999991));
+			CHECK(Double::equal(0.00000000000000001234, 0.0), true);
+			CHECK(Double::hash(0.00000000000000001234), Double::hash(0.0));
+			CHECK(Double::equal(12345678901234.55677889, 12345678901234.557789), true);
+		}
 
+
+		TEST_METHOD(GeometryFactory_point_in_line_range)
+		{
+			GeometryFactory *test = new GeometryFactory();
+			Point *p = new Point(3.0, 4.0);
+			Line l1(3, 4, 5, 8, LIMITED_LINE);
+			Line l2(3, 4, -10, -33, SINGLE_INFINITE_LINE);
+			Line l3(-3, -4, -6, -8, SINGLE_INFINITE_LINE);
+			Line l4(0, 0, 1, 1, DOUBLE_INFINITE_LINE);
+			CHECK(test->point_in_line_range(p, l1), true);
+			CHECK(test->point_in_line_range(p, l2), true);
+			CHECK(test->point_in_line_range(p, l3), false);
+			CHECK(test->point_in_line_range(p, l4), true);
+			delete(test);
+			delete(p);
+		}
+
+		TEST_METHOD(GeometryFactory_point_on_line) 
+		{
+			GeometryFactory *test = new GeometryFactory();
+			Point *p1 = new Point(2.999999999999999001, 3.0);
+			Point *p2 = new Point(3.000000000123, 3.0);
+			Point *p3 = new Point(4.0, -4.0);
+			Line l1(3, 3, 4, 4, DOUBLE_INFINITE_LINE);
+			CHECK(test->point_on_line(p1, l1), true);
+			CHECK(test->point_on_line(p2, l1), false);
+			CHECK(test->point_on_line(p3, l1), false);
+			delete p1;
+			delete p2;
+			delete p3;
+			delete test;
+		}
+
+		TEST_METHOD(GeometryFactory_point_on_circle)
+		{
+			GeometryFactory *test = new GeometryFactory();
+			Point *p1 = new Point(1.00000000000000003, 0.0);
+			Point *p2 = new Point(1.0000000000223, 1.0);
+			Point *p3 = new Point(1.0000000000223, 0.0);
+			Circle c(0, 0, 1);
+			CHECK(test->point_on_circle(p1, c), true);
+			CHECK(test->point_on_circle(p2, c), false);
+			delete test;
+			delete p1;
+			delete p2;
+			delete p3;
+		}
+
+		TEST_METHOD(line_line_intersect)
+		{
+			GeometryFactory *test = new GeometryFactory();
+			vector<Point> p;
+			Line l1(1, 2, 3, 4, DOUBLE_INFINITE_LINE);
+			Line l2(1, 2, -1, 0, SINGLE_INFINITE_LINE);
+			Line l3(1, 2, 5, 8, LIMITED_LINE);
+			Point p1(1.0, 2.0);
+			test->line_line_intersect(l1, l2);
+			p = test->getPoints();
+			CHECK((int)p.size(), 1);
+			CHECK(p[0].equals(p1), true);
+			test->line_line_intersect(l1, l3);
+			CHECK((int)p.size(), 1);
+			CHECK(p[0].equals(p1), true);
+			test->line_line_intersect(l2, l3);
+			CHECK((int)p.size(), 1);
+			CHECK(p[0].equals(p1), true);
+			delete test;
 		}
 
 	};

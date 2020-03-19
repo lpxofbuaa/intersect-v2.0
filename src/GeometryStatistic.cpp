@@ -297,17 +297,20 @@ void GeometryFactory::line_circle_intersect(Line &l, Circle &c) {
 	long long delta_y_2;
 	if (l.b != 0) {
 		// k exists
-		double A = (double)(l.a * l.a + l.b * l.b) / (double)(l.b * l.b);
-		double B = (double)(c.b * l.a * l.b - c.a * l.b * l.b + l.a * l.c) * 2.0 / (double)(l.b * l.b);
-		double C = (double)(c.a * c.a + c.b * c.b + (double)(l.c * l.c) / (double)(l.b * l.b) - c.r * c.r + (double)(2.0 * l.c * c.b) / (double)(l.b));
+		double A = (double)((double)l.a * l.a + (double)l.b * l.b) / (double)((double)l.b * l.b);
+		double B = (double)((double)c.b * l.a * l.b - (double)c.a * l.b * l.b + (double)l.a * l.c) * 2.0 / (double)((double)l.b * l.b);
+		double C = (double)((double)c.a * c.a + (double)c.b * c.b + (double)((double)l.c * l.c) / (double)((double)l.b * l.b) - (double)c.r * c.r + (double)(2.0 * l.c * c.b) / (double)(l.b));
 		double delta = B * B - 4 * A * C;
 		if (Double::greater(delta, 0)) {
-			double res1_x = (double)(-B + sqrt(delta)) / (double)(2 * A);
-			double res2_x = (double)(-B - sqrt(delta)) / (double)(2 * A);
+			double res1_x = (double)(-B + sqrt(delta)) / (double)(2.0 * A);
+			double res2_x = (double)(-B - sqrt(delta)) / (double)(2.0 * A);
 			double res1_y = (double)(-l.c - l.a * res1_x) / (double)l.b;
 			double res2_y = (double)(-l.c - l.a * res2_x) / (double)l.b;
 			Point *p1 = new Point(res1_x, res1_y);
 			Point *p2 = new Point(res2_x, res2_y);
+			//cout << l.type << endl;
+			//cout << p1->toString() << endl;
+			//cout << p2->toString() << endl;
 			if (point_in_line_range(p1, l)) {
 				increase_point(p1);
 			}
@@ -319,6 +322,8 @@ void GeometryFactory::line_circle_intersect(Line &l, Circle &c) {
 			double res_x = (double)(-B) / (2 * A);
 			double res_y = (double)(-l.c - l.a * res_x) / (double)l.b;
 			Point *p = new Point(res_x, res_y);
+			//cout << l.type << endl;
+			//cout << p->toString() << endl;
 			if (point_in_line_range(p, l)) {
 				increase_point(p);
 			}
@@ -331,6 +336,9 @@ void GeometryFactory::line_circle_intersect(Line &l, Circle &c) {
 			double res_y2 = -sqrt(delta_y_2) + c.b;
 			Point *p1 = new Point((double)l.x1, res_y1);
 			Point *p2 = new Point((double)l.x1, res_y2);
+			//cout << l.type << endl;
+			//cout << p1->toString() << endl;
+			//cout << p2->toString() << endl;
 			if (point_in_line_range(p1, l)) {
 				increase_point(p1);
 			}
@@ -340,6 +348,8 @@ void GeometryFactory::line_circle_intersect(Line &l, Circle &c) {
 		}
 		else if (delta_y_2 == 0) {
 			Point *p = new Point((double)l.x1, (double)c.b);
+			//cout << l.type << endl;
+			//cout << p->toString() << endl;
 			if (point_in_line_range(p, l)) {
 				increase_point(p);
 			}
@@ -358,13 +368,13 @@ void GeometryFactory::circle_circle_intersect(Circle &c1, Circle &c2) {
 	// copy by line_intersect_circle
 	if (b != 0) {
 		// k exists
-		double A = (double)(a * a + b * b) / (double)(b * b);
-		double B = (double)(c1.b * a * b - c1.a * b * b + a * c) * 2.0 / (double)(b * b);
-		double C = (double)(c1.a * c1.a + c1.b * c1.b + (double)(c * c) / (double)(b * b) - c1.r * c1.r + (double)(2.0 * c * c1.b) / (double)(b));
+		double A = (double)((double)a * a + (double)b * b) / (double)((double)b * b);
+		double B = (double)((double)c1.b * a * b - (double)c1.a * b * b + (double)a * c) * 2.0 / (double)((double)b * b);
+		double C = (double)((double)c1.a * c1.a + (double)c1.b * c1.b + (double)((double)c * c) / (double)((double)b * b) - (double)c1.r * c1.r + (double)(2.0 * c * c1.b) / (double)(b));
 		double delta = B * B - 4 * A * C;
 		if (Double::greater(delta, 0)) {
-			double res1_x = (double)(-B + sqrt(delta)) / (double)(2 * A);
-			double res2_x = (double)(-B - sqrt(delta)) / (double)(2 * A);
+			double res1_x = (double)(-B + sqrt(delta)) / (double)(2.0 * A);
+			double res2_x = (double)(-B - sqrt(delta)) / (double)(2.0 * A);
 			double res1_y = (double)(-c - a * res1_x) / (double)b;
 			double res2_y = (double)(-c - a * res2_x) / (double)b;
 			Point *p1 = new Point(res1_x, res1_y);
@@ -382,8 +392,8 @@ void GeometryFactory::circle_circle_intersect(Circle &c1, Circle &c2) {
 		}
 	}
 	else {
-		double x1 = (double)(c1.r * c1.r - c2.r * c2.r + c2.b * c2.b - c1.b * c1.b + c2.a * c2.a - c1.a * c1.a) / (double)(2.0 * (c2.a - c1.a));
-		double delta_y_2 = c1.r * c1.r - (x1 - c1.a) * (x1 - c1.a);
+		double x1 = (double)((double)c1.r * c1.r - (double)c2.r * c2.r + (double)c2.b * c2.b - (double)c1.b * c1.b + (double)c2.a * c2.a - (double)c1.a * c1.a) / (double)(2.0 * ((double)c2.a - c1.a));
+		double delta_y_2 = (double)c1.r * c1.r - ((double)x1 - (double)c1.a) * ((double)x1 - (double)c1.a);
 		if (Double::greater(delta_y_2, 0)) {
 			double res_y1 = sqrt(delta_y_2) + c1.b;
 			double res_y2 = -sqrt(delta_y_2) + c1.b;

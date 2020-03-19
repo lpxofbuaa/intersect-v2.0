@@ -16,7 +16,7 @@ typedef unordered_map<int, Circle> IdCircleMap;
 typedef unordered_set<Circle, circle_hash, circle_equal> CircleSet;
 
 class GeometryFactory{
-private:
+public:
 	PointMap points;						// 交点集合<无理数点，点存在于多少几何对象上>
 	LineMap lines;												// <k&b, <ID, Lines>>
 	CircleSet circles;											// <Circles>
