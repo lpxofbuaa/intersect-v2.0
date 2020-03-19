@@ -9,40 +9,39 @@
 #include <map>
 #include <unordered_map>
 
-typedef unordered_map<RationalPoint*, int, rational_point_hash, rational_point_equal> RationalPointMap;
-typedef unordered_map<UnRationalPoint*, int, unrational_point_hash, unrational_point_equal> UnRationalPointMap;
-typedef unordered_map<int, Line> LineIdMap;
-typedef unordered_map<LineKey, LineIdMap, line_key_hash, line_key_equal> LineMap;
-typedef unordered_map<int, Circle> CircleIdMap;
+typedef unordered_map<Point*, int, point_hash, point_equal> PointMap;
+typedef unordered_map<int, Line> IdLineMap;
+typedef unordered_map<LineKey, vector<Line>, line_key_hash, line_key_equal> LineMap;
+typedef unordered_map<int, Circle> IdCircleMap;
 typedef unordered_set<Circle, circle_hash, circle_equal> CircleSet;
 
 
 class GeometryFactory{
 private:
-	RationalPointMap rational_points;
-	UnRationalPointMap unrational_points;
-	LineMap lines;
-	CircleSet circles;
-	LineIdMap line_ids;
-	CircleIdMap circle_ids;
+	PointMap intersects;										// 记录交点
+	LineMap lines;												// 归类处在同条直线上的Line类
+	CircleSet circles;											// 圆集合
+	IdLineMap id_lines;											// <id, line> 映射
+	IdCircleMap id_circle;										// <id, circle> 映射
 	int line_counter = 1;
 	int circle_counter = 0;
 	void line_line_intersect(Line &l1, Line &l2);
 	void line_circle_intersect(Line &l1, Circle &c1);
 	void circle_circle_intersect(Circle &c1, Circle &c2);
-	inline void increase_rational_point(RationalPoint* p);
-	inline void increase_unrational_point(UnRationalPoint* p);
-	inline void decrease_rational_point(RationalPoint* p);
-	inline void decrease_unrational_point(UnRationalPoint* p);
+	inline void increase_point(Point* p);
+	inline void decrease_point(Point* p);
 	void removeLine(Line &l);
 	void removeCircle(Circle &c);
+
 public:
 	GeometryFactory();
-	int addLine(int type, int x1, int x2, int y1, int y2); // exception handle
-	int addCircle(int x, int y, int r); // exception handle
+	/* Modification */
+	int addLine(int type, int x1, int x2, int y1, int y2); 		// exception handle
+	int addCircle(int x, int y, int r); 						// exception handle
+	void remove(int id);
+	/* Query */
 	Line getLine(int id);
 	Circle getCircle(int id);
-	void remove(int id);
 	vector<Point> getPoints();
 	int getPointsCount();
 };
