@@ -13,21 +13,21 @@ bool Double::equal(double const & a, double const & b)
 {
 	double delta = fabs(a - b);
 	//return delta < 1e-7;
-	return delta < min(fabs(a) ,fabs(b)) * DOUBLE_EPSILON;
+	return delta < max(1.0, min(fabs(a) ,fabs(b))) * DOUBLE_EPSILON;
 }
 
 bool Double::greater(double const & a, double const & b)
 {
-	return a - b > min(fabs(a), fabs(b)) * DOUBLE_EPSILON;
+	return a - b > max(1.0, min(fabs(a), fabs(b))) * DOUBLE_EPSILON;
 }
 
 bool Double::less(double const & a, double const & b)
 {
-	return b - a > min(fabs(a), fabs(b)) * DOUBLE_EPSILON;
+	return b - a > max(1.0, min(fabs(a), fabs(b))) * DOUBLE_EPSILON;
 }
 
 size_t double_hash::operator()(double const& a) const {
-	return hash<long long>{}((long long)floor(a * DOUBLE_HASH_EPS));
+	return hash<long long>{}((long long)round(a * DOUBLE_HASH_EPS));
 }
 
 bool double_equal::operator()(double const& a, double const& b) const {

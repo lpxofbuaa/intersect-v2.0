@@ -125,29 +125,23 @@ Circle GeometryFactory::getCircle(int id)
 	return i->second;
 }
 
+inline bool GeometryFactory::point_on_line(Point *p, Line &l) {
+	// ax + by + c = 0
+	return Double::equal((double)(l.a * p->x + l.b * p->y + l.c), 0.0);
+}
+
+inline bool GeometryFactory::point_on_circle(Point *p, Circle &c) {
+	// (x - x0)^2 + (y - y0)^2 == r^2
+	return Double::equal((p->x - c.a) * (p->x - c.a) + (p->y - c.b) * (p->y - c.b), (double)c.r * c.r);
+}
+
 void GeometryFactory::removeLine(Line &l) {
 
 	/* Scan UnRational Points On the Line. */
 	vector<Point*> to_delete_points;
-	double_equal doubleequal;
 	for (PointMap::iterator i = points.begin(); i != points.end(); ++i) {
-		if (l.k.k == K_INFINITE && doubleequal((double)l.x1, i->first->x)) {
-			// k not exists
-			if (point_in_line_range(i->first, l)) {
-				to_delete_points.push_back(i->first);
-			}
-		}
-		else if (l.k.k != K_INFINITE) {
-			// k exists
-
-			double k = (double) (l.y1 - l.y2)/ (double) (l.x1 - l.x2);
-			double b = (double) (l.x1*l.y2 - l.x2*l.y1)/ (double) (l.x1 - l.x2);
-			// y = k * x + b
-			if (doubleequal(k*i->first->x + b, i->first->y)) {
-				if (point_in_line_range(i->first, l)) {
-					to_delete_points.push_back(i->first);
-				}
-			}
+		if (point_on_line(i->first, l)) {
+			to_delete_points.push_back(i->first);
 		}
 	}
 	for (vector<Point*>::iterator i = to_delete_points.begin(); i != to_delete_points.end(); ++i) {
@@ -159,10 +153,9 @@ void GeometryFactory::removeCircle(Circle &c) {
 	
 	/* Scan UnRational Points on the Circle. */
 	vector<Point*> to_delete_unrational_points;
-	double_equal equals;
 	for (PointMap::iterator i = points.begin(); i != points.end(); ++i) {
-		// (x - x0)^2 + (y - y0)^2 == r^2
-		if (equals((i->first->x - c.a) * (i->first->x - c.a) + (i->first->y - c.b) * (i->first->y - c.b), (double)c.r * c.r)) {
+		
+		if (point_on_circle(i->first, c)) {
 			to_delete_unrational_points.push_back(i->first);
 		}
 	}
@@ -308,7 +301,7 @@ void GeometryFactory::line_circle_intersect(Line &l, Circle &c) {
 		double B = (double)(c.b * l.a * l.b - c.a * l.b * l.b + l.a * l.c) * 2.0 / (double)(l.b * l.b);
 		double C = (double)(c.a * c.a + c.b * c.b + (double)(l.c * l.c) / (double)(l.b * l.b) - c.r * c.r + (double)(2.0 * l.c * c.b) / (double)(l.b));
 		double delta = B * B - 4 * A * C;
-		if (delta > 0) {
+		if (Double::greater(delta, 0)) {
 			double res1_x = (double)(-B + sqrt(delta)) / (double)(2 * A);
 			double res2_x = (double)(-B - sqrt(delta)) / (double)(2 * A);
 			double res1_y = (double)(-l.c - l.a * res1_x) / (double)l.b;
@@ -322,7 +315,7 @@ void GeometryFactory::line_circle_intersect(Line &l, Circle &c) {
 				increase_point(p2);
 			}
 		}
-		else if (delta == 0) {
+		else if (Double::equal(delta, 0)) {
 			double res_x = (double)(-B) / (2 * A);
 			double res_y = (double)(-l.c - l.a * res_x) / (double)l.b;
 			Point *p = new Point(res_x, res_y);
@@ -333,11 +326,78 @@ void GeometryFactory::line_circle_intersect(Line &l, Circle &c) {
 	}
 	else {
 		delta_y_2 = c.r * c.r - (l.x1 - c.a) * (l.x1 - c.a);
+		if (delta_y_2 > 0) {
+			double res_y1 = sqrt(delta_y_2) + c.b;
+			double res_y2 = -sqrt(delta_y_2) + c.b;
+			Point *p1 = new Point((double)l.x1, res_y1);
+			Point *p2 = new Point((double)l.x1, res_y2);
+			if (point_in_line_range(p1, l)) {
+				increase_point(p1);
+			}
+			if (point_in_line_range(p2, l)) {
+				increase_point(p2);
+			}
+		}
+		else if (delta_y_2 == 0) {
+			Point *p = new Point((double)l.x1, (double)c.b);
+			if (point_in_line_range(p, l)) {
+				increase_point(p);
+			}
+		}
 	} 
 	
 }
 
 // todo: check
 void GeometryFactory::circle_circle_intersect(Circle &c1, Circle &c2) {
+	// get common line
+	long long a = 2 * (c2.a - c1.a);
+	long long b = 2 * (c2.b - c1.b);
+	long long c = c1.a * c1.a - c2.a * c2.a + c1.b * c1.b - c2.b * c2.b + c2.r * c2.r - c1.r * c1.r;
+
+	// copy by line_intersect_circle
+	if (b != 0) {
+		// k exists
+		double A = (double)(a * a + b * b) / (double)(b * b);
+		double B = (double)(c1.b * a * b - c1.a * b * b + a * c) * 2.0 / (double)(b * b);
+		double C = (double)(c1.a * c1.a + c1.b * c1.b + (double)(c * c) / (double)(b * b) - c1.r * c1.r + (double)(2.0 * c * c1.b) / (double)(b));
+		double delta = B * B - 4 * A * C;
+		if (Double::greater(delta, 0)) {
+			double res1_x = (double)(-B + sqrt(delta)) / (double)(2 * A);
+			double res2_x = (double)(-B - sqrt(delta)) / (double)(2 * A);
+			double res1_y = (double)(-c - a * res1_x) / (double)b;
+			double res2_y = (double)(-c - a * res2_x) / (double)b;
+			Point *p1 = new Point(res1_x, res1_y);
+			Point *p2 = new Point(res2_x, res2_y);
+			
+			increase_point(p1);
+			increase_point(p2);
+		}
+		else if (Double::equal(delta, 0)) {
+			double res_x = (double)(-B) / (2 * A);
+			double res_y = (double)(-c - a * res_x) / (double)b;
+			Point *p = new Point(res_x, res_y);
+			
+			increase_point(p);
+		}
+	}
+	else {
+		double x1 = (double)(c1.r * c1.r - c2.r * c2.r + c2.b * c2.b - c1.b * c1.b + c2.a * c2.a - c1.a * c1.a) / (double)(2.0 * (c2.a - c1.a));
+		double delta_y_2 = c1.r * c1.r - (x1 - c1.a) * (x1 - c1.a);
+		if (Double::greater(delta_y_2, 0)) {
+			double res_y1 = sqrt(delta_y_2) + c1.b;
+			double res_y2 = -sqrt(delta_y_2) + c1.b;
+			Point *p1 = new Point((double)x1, res_y1);
+			Point *p2 = new Point((double)x1, res_y2);
+			
+			increase_point(p1);
+			increase_point(p2);
+		}
+		else if (Double::equal(delta_y_2, 0)) {
+			Point *p = new Point((double)x1, (double)c1.b);
+
+			increase_point(p);
+		}
+	}
 	
 }

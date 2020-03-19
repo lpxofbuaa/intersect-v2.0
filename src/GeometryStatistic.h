@@ -31,7 +31,8 @@ private:
 	inline void decrease_point(Point* p);	//  ..
 	void removeLine(Line &l);									// 移除Line对象
 	void removeCircle(Circle &c);								// 移除Circle对象
-
+	inline bool point_on_line(Point *p, Line &l);
+	inline bool point_on_circle(Point *p, Circle &c);
 	inline bool point_in_line_range(Point* p, Line &l);
 public:
 	GeometryFactory();
