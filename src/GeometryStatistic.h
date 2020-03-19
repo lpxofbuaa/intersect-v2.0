@@ -9,42 +9,39 @@
 #include <map>
 #include <unordered_map>
 
-typedef unordered_map<RationalPoint*, int, rational_point_hash, rational_point_equal> RationalPointMap;
-typedef unordered_map<UnRationalPoint*, int, unrational_point_hash, unrational_point_equal> UnRationalPointMap;
-typedef unordered_map<int, Line> LineIdMap;
-typedef unordered_map<LineKey, LineIdMap, line_key_hash, line_key_equal> LineMap;
-typedef unordered_map<int, Circle> CircleIdMap;
+typedef unordered_map<Point*, int, point_hash, point_equal> PointMap;
+typedef unordered_map<int, Line> IdLineMap;
+typedef unordered_map<LineKey, IdLineMap, line_key_hash, line_key_equal> LineMap;
+typedef unordered_map<int, Circle> IdCircleMap;
 typedef unordered_set<Circle, circle_hash, circle_equal> CircleSet;
 
 class GeometryFactory{
 private:
-	RationalPointMap rational_points;							// 交点集合<有理数点，点存在于多少几何对象上> 
-	UnRationalPointMap unrational_points;						// 交点集合<无理数点，点存在于多少几何对象上>
+	PointMap points;						// 交点集合<无理数点，点存在于多少几何对象上>
 	LineMap lines;												// <k&b, <ID, Lines>>
 	CircleSet circles;											// <Circles>
-	LineIdMap line_ids;											// <ID, Line>
-	CircleIdMap circle_ids;										// <ID, Circle>
+	IdLineMap line_ids;											// <ID, Line>
+	IdCircleMap circle_ids;										// <ID, Circle>
 	int line_counter = 1;										// Line ID 累加器
 	int circle_counter = 0;										// Circle ID 累加器
 	void line_line_intersect(Line &l1, Line &l2);				// 线线交点
 	void line_circle_intersect(Line &l1, Circle &c1);			// 线圆交点
 	void circle_circle_intersect(Circle &c1, Circle &c2);		// 圆圆交点
-	inline void increase_rational_point(RationalPoint* p);		// 维护交点集合
-	inline void increase_unrational_point(UnRationalPoint* p);	//  ..
-	inline void decrease_rational_point(RationalPoint* p);		//  ..
-	inline void decrease_unrational_point(UnRationalPoint* p);	//  ..
+	inline void increase_point(Point* p);	//  ..
+	inline void decrease_point(Point* p);	//  ..
 	void removeLine(Line &l);									// 移除Line对象
 	void removeCircle(Circle &c);								// 移除Circle对象
 
-	inline bool rational_point_in_line_range(RationalPoint* p, Line &l);
-	inline bool unrational_point_in_line_range(UnRationalPoint* p, Line &l);
+	inline bool point_in_line_range(Point* p, Line &l);
 public:
 	GeometryFactory();
-	int addLine(int type, int x1, int x2, int y1, int y2);		// exception handle
-	int addCircle(int x, int y, int r);							// exception handle
+	/* Modification */
+	int addLine(int type, long long x1, long long x2, long long y1, long long y2);		// exception handle
+	int addCircle(long long x, long long y, long long r);							// exception handle
+	void remove(int id);										// For Remove Operation
+	/* Query */
 	Line getLine(int id);										// Update
 	Circle getCircle(int id);									// For Update
-	void remove(int id);										// For Remove Operation
 	vector<Point> getPoints();									// 
 	int getPointsCount();										// Update
 };
