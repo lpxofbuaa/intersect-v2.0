@@ -9,6 +9,7 @@
 #include <map>
 #include <unordered_map>
 #include <iomanip>
+#include <regex>
 
 typedef unordered_map<Point*, int, point_hash, point_equal> PointMap;
 typedef unordered_map<int, Line> IdLineMap;
@@ -46,4 +47,5 @@ public:
 	Circle getCircle(int id);									// For Update
 	vector<Point> getPoints();									// 
 	int getPointsCount();										// Update
+	int addObjectFromFile(string & message);							// Input File name point
 };

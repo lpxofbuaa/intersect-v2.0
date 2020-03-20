@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "GeometryStatistic.h"
 #include <iostream>
+#include <sstream>
 
 using namespace std;
 
@@ -206,6 +207,7 @@ int GeometryFactory::getPointsCount()
 {
 	return (int) points.size();
 }
+
 
 void GeometryFactory::increase_point(Point* point) {
 	/*if (point->x >= 1071.799 && point->x <= 1071.801 && point->y >= -26.601 && point->y <= -26.599) {
@@ -445,4 +447,43 @@ void GeometryFactory::circle_circle_intersect(Circle &c1, Circle &c2) {
 		}
 	}
 	
+}
+
+int GeometryFactory::addObjectFromFile(string & message)
+{
+	regex line_pattern("^[R|L|S](\s[+-]?\d+){4}$");
+	regex circle_pattern("^C(\s[+-]?\d+){3}$");
+	smatch line_results;
+	smatch circle_results;
+	if (regex_match(message, line_pattern)) {
+		stringstream trans(message);
+		char t;
+		trans >> t;
+		int type;
+		switch (t)
+		{
+		case 'R':
+			type = SINGLE_INFINITE_LINE;
+			break;
+		case 'L':
+			type = DOUBLE_INFINITE_LINE;
+			break;
+		case 'S':
+			type = LIMITED_LINE;
+			break;
+		default:
+			break;
+		}
+		long long x1, y1, x2, y2;
+		trans >> x1 >> y1 >> x2 >> y2;
+		return addLine(type, x1, x2, y1, y2);
+	}
+	else if (regex_match(message, circle_pattern)) {
+		stringstream trans(message);
+		char t;
+		long long a, b, r;
+		trans >> t >> a >> b >> r;
+		return addCircle(a, b, r);
+	}
+	throw WrongFormatException("we got the wrong format input!");
 }

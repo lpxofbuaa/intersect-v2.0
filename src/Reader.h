@@ -10,13 +10,13 @@ using namespace std;
 
 class Reader {
 private:
-	ifstream reader;
-	ofstream writer;
+	ifstream *reader=NULL;
+	ofstream *writer=NULL;
 	GeometryFactory *g;
+	void command_analysis(int argc, char* argv[]);
+	void error_handle(string message, int type=-1);
 public:
-	Reader(string in_file, string out_file, GeometryFactory *g);
-	vector<Line> lines;
-	vector<Circle> circles;
-	void read();
-	void write(int n);
+	Reader(int argc, char* argv[], GeometryFactory *g);
+	void exec();
+	void dump();
 };

@@ -87,3 +87,15 @@ const char * ObjectNotFoundException::what() const throw()
 {
 	return message.c_str();
 }
+
+WrongFormatException::WrongFormatException() : message("Error: ") {}
+
+WrongFormatException::WrongFormatException(string msg) : message("Error: " + msg) {}
+
+WrongFormatException::~WrongFormatException() throw() {}
+
+const char * WrongFormatException::what() const throw()
+{
+	return message.c_str();
+}
+

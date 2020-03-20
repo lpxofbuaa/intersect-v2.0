@@ -103,3 +103,19 @@ public:
 private:
 	string message;
 };
+
+//-------------------------------------------------------------------------------------
+
+/*
+ * 输入object类型不对
+*/
+class WrongFormatException : public exception {
+public:
+	WrongFormatException();
+	WrongFormatException(string msg);
+	~WrongFormatException() throw();
+	virtual const char* what() const throw ();
+private:
+	string message;
+};
+
