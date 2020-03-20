@@ -13,17 +13,20 @@ bool Double::equal(double const & a, double const & b)
 {
 	double delta = fabs(a - b);
 	//return delta < 1e-7;
-	return delta < max(1.0, min(fabs(a) ,fabs(b))) * DOUBLE_EPSILON;
+	//cout << "--------------------------------" << endl;
+	//cout << setprecision(16) << delta << endl;
+	//cout << setprecision(16) << max(min(fabs(a), fabs(b)) * DOUBLE_EPSILON, DOUBLE_MIN_EPSILON) << endl;
+	return delta < max(min(fabs(a), fabs(b)) * DOUBLE_EPSILON, DOUBLE_MIN_EPSILON);
 }
 
 bool Double::greater(double const & a, double const & b)
 {
-	return a - b > max(1.0, min(fabs(a), fabs(b))) * DOUBLE_EPSILON;
+	return a - b > max(min(fabs(a), fabs(b)) * DOUBLE_EPSILON, DOUBLE_MIN_EPSILON);
 }
 
 bool Double::less(double const & a, double const & b)
 {
-	return b - a > max(1.0, min(fabs(a), fabs(b))) * DOUBLE_EPSILON;
+	return b - a > max(min(fabs(a), fabs(b)) * DOUBLE_EPSILON, DOUBLE_MIN_EPSILON);
 }
 
 size_t double_hash::operator()(double const& a) const {

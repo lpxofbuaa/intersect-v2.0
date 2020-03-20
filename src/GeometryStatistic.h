@@ -8,6 +8,7 @@
 #include <set>
 #include <map>
 #include <unordered_map>
+#include <iomanip>
 
 typedef unordered_map<Point*, int, point_hash, point_equal> PointMap;
 typedef unordered_map<int, Line> IdLineMap;
@@ -33,7 +34,7 @@ public:
 	void removeCircle(Circle &c);								// ÒÆ³ýCircle¶ÔÏó
 	inline bool point_on_line(Point *p, Line &l);
 	inline bool point_on_circle(Point *p, Circle &c);
-	inline bool point_in_line_range(Point* p, Line &l);
+	inline bool point_in_line_range(double x, double y, Line &l);
 public:
 	GeometryFactory();
 	/* Modification */

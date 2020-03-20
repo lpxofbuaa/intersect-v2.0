@@ -208,6 +208,9 @@ int GeometryFactory::getPointsCount()
 }
 
 void GeometryFactory::increase_point(Point* point) {
+	/*if (point->x >= 1071.799 && point->x <= 1071.801 && point->y >= -26.601 && point->y <= -26.599) {
+		double tmp = 8;
+	}*/
 	PointMap::iterator value = points.find(point);
 	if (value != points.end()) {
 		value->second += 1;
@@ -227,7 +230,7 @@ void GeometryFactory::decrease_point(Point* p) {
 	}
 }
 
-inline bool GeometryFactory::point_in_line_range(Point * p, Line & l)
+inline bool GeometryFactory::point_in_line_range(double x, double y, Line & l)
 {
 	switch (l.type)
 	{
@@ -236,28 +239,34 @@ inline bool GeometryFactory::point_in_line_range(Point * p, Line & l)
 	case SINGLE_INFINITE_LINE:
 		if (l.x1 != l.x2) {
 			if (l.x2 > l.x1) {
-				return Double::greater(p->x, (double)l.x1) || Double::equal(p->x, (double)l.x1);
+				return Double::greater(x, (double)l.x1) || Double::equal(x, (double)l.x1);
+				// return x >= (double)l.x1;
 			}
 			else {
-				return Double::less(p->x, (double)l.x1) || Double::equal(p->x, (double)l.x1);
+				return Double::less(x, (double)l.x1) || Double::equal(x, (double)l.x1);
+				// return x <= (double)l.x1;
 			}
 		}
 		else {
 			if (l.y2 > l.y1) {
-				return Double::greater(p->y, (double)l.y1) || Double::equal(p->y, (double)l.y1);
+				return Double::greater(y, (double)l.y1) || Double::equal(y, (double)l.y1);
+				// return y >= (double)l.y1;
 			}
 			else {
-				return Double::less(p->y, (double)l.y1) || Double::equal(p->y, (double)l.y1);
+				return Double::less(y, (double)l.y1) || Double::equal(y, (double)l.y1);
+				// return y <= (double)l.y1;
 			}
 		}
 	case LIMITED_LINE:
 		if (l.x1 != l.x2) {
-			return (Double::greater(p->x, (double)l.x_min) || Double::equal(p->x, (double)l.x_min))
-				&& (Double::less(p->x, (double)l.x_max) || Double::equal(p->x, (double)l.x_max));
+			return (Double::greater(x, (double)l.x_min) || Double::equal(x, (double)l.x_min))
+				&& (Double::less(x, (double)l.x_max) || Double::equal(x, (double)l.x_max));
+			// return (x >= (double)l.x_min) && (x <= (double)l.x_max);
 		}
 		else {
-			return (Double::greater(p->y, (double)l.y_min) || Double::equal(p->y, (double)l.y_min))
-				&& (Double::less(p->y, (double)l.y_max) || Double::equal(p->y, (double)l.y_max));
+			return (Double::greater(y, (double)l.y_min) || Double::equal(y, (double)l.y_min))
+				&& (Double::less(y, (double)l.y_max) || Double::equal(y, (double)l.y_max));
+			// return (y >= (double)l.y_min) && (y <= (double)l.y_max);
 		}
 	default:
 		break;
@@ -270,9 +279,9 @@ void GeometryFactory::line_line_intersect(Line &l1, Line &l2) {
 	if (delta_k != 0) {
 		double x = (double)(l1.b * l2.c - l2.b * l1.c) / (double)delta_k;
 		double y = (double)(l2.a * l1.c - l1.a * l2.c) / (double)delta_k;
-		Point *p = new Point(x, y);
-		if (point_in_line_range(p, l1) && point_in_line_range(p, l2)) {
-			increase_point(p);
+
+		if (point_in_line_range(x, y, l1) && point_in_line_range(x, y, l2)) {
+			increase_point(new Point(x, y));
 		}
 	}
 	else {
@@ -297,35 +306,43 @@ void GeometryFactory::line_circle_intersect(Line &l, Circle &c) {
 	long long delta_y_2;
 	if (l.b != 0) {
 		// k exists
-		double A = (double)((double)l.a * l.a + (double)l.b * l.b) / (double)((double)l.b * l.b);
-		double B = (double)((double)c.b * l.a * l.b - (double)c.a * l.b * l.b + (double)l.a * l.c) * 2.0 / (double)((double)l.b * l.b);
+		double A = (double)(l.a * l.a + l.b * l.b) / (double)(l.b * l.b);
+		double B = (double)(c.b * l.a * l.b - c.a * l.b * l.b + l.a * l.c) * 2.0 / (double)(l.b * l.b);
 		double C = (double)((double)c.a * c.a + (double)c.b * c.b + (double)((double)l.c * l.c) / (double)((double)l.b * l.b) - (double)c.r * c.r + (double)(2.0 * l.c * c.b) / (double)(l.b));
 		double delta = B * B - 4 * A * C;
-		if (Double::greater(delta, 0)) {
+		double distance = (double)(fabs(l.a * c.a + l.b * c.b + l.c)) / (double)(sqrt(l.a * l.a + l.b * l.b));
+		// if (Double::greater(delta, 0)) {
+		if (Double::less(distance, (double)c.r)) {
 			double res1_x = (double)(-B + sqrt(delta)) / (double)(2.0 * A);
 			double res2_x = (double)(-B - sqrt(delta)) / (double)(2.0 * A);
 			double res1_y = (double)(-l.c - l.a * res1_x) / (double)l.b;
 			double res2_y = (double)(-l.c - l.a * res2_x) / (double)l.b;
-			Point *p1 = new Point(res1_x, res1_y);
-			Point *p2 = new Point(res2_x, res2_y);
+			
 			//cout << l.type << endl;
 			//cout << p1->toString() << endl;
 			//cout << p2->toString() << endl;
-			if (point_in_line_range(p1, l)) {
-				increase_point(p1);
+			/*if (res1_x >= -290.894 && res1_x <= -290.892 && res1_y >= -59.848 && res1_y <= -59.846) {
+				double tmp = 8;
+			}*/
+			if (point_in_line_range(res1_x, res1_y, l)) {
+				increase_point(new Point(res1_x, res1_y));
 			}
-			if (point_in_line_range(p2, l)) {
-				increase_point(p2);
+			if (point_in_line_range(res2_x, res2_y, l)) {
+				increase_point(new Point(res2_x, res2_y));
 			}
 		}
-		else if (Double::equal(delta, 0)) {
+		// else if (Double::equal(delta, 0)) {
+		else if (Double::equal(distance, (double)c.r)) {
 			double res_x = (double)(-B) / (2 * A);
 			double res_y = (double)(-l.c - l.a * res_x) / (double)l.b;
-			Point *p = new Point(res_x, res_y);
+			
 			//cout << l.type << endl;
 			//cout << p->toString() << endl;
-			if (point_in_line_range(p, l)) {
-				increase_point(p);
+			/*if (res_x >= -290.894 && res_x <= -290.892 && res_y >= -59.848 && res_y <= -59.846) {
+				double tmp = 8;
+			}*/
+			if (point_in_line_range(res_x, res_y, l)) {
+				increase_point(new Point(res_x, res_y));
 			}
 		}
 	}
@@ -334,24 +351,26 @@ void GeometryFactory::line_circle_intersect(Line &l, Circle &c) {
 		if (delta_y_2 > 0) {
 			double res_y1 = sqrt(delta_y_2) + c.b;
 			double res_y2 = -sqrt(delta_y_2) + c.b;
-			Point *p1 = new Point((double)l.x1, res_y1);
-			Point *p2 = new Point((double)l.x1, res_y2);
+			
 			//cout << l.type << endl;
 			//cout << p1->toString() << endl;
 			//cout << p2->toString() << endl;
-			if (point_in_line_range(p1, l)) {
-				increase_point(p1);
+			/*if (l.x1 >= -290.894 && l.x1 <= -290.892 && res_y1 >= -59.848 && res_y1 <= -59.846) {
+				double tmp = 8;
+			}*/
+			if (point_in_line_range((double)l.x1, res_y1, l)) {
+				increase_point(new Point((double)l.x1, res_y1));
 			}
-			if (point_in_line_range(p2, l)) {
-				increase_point(p2);
+			if (point_in_line_range((double)l.x1, res_y2, l)) {
+				increase_point(new Point((double)l.x1, res_y2));
 			}
 		}
 		else if (delta_y_2 == 0) {
-			Point *p = new Point((double)l.x1, (double)c.b);
+			
 			//cout << l.type << endl;
 			//cout << p->toString() << endl;
-			if (point_in_line_range(p, l)) {
-				increase_point(p);
+			if (point_in_line_range((double)l.x1, (double)c.b, l)) {
+				increase_point(new Point((double)l.x1, (double)c.b));
 			}
 		}
 	} 
@@ -364,15 +383,20 @@ void GeometryFactory::circle_circle_intersect(Circle &c1, Circle &c2) {
 	long long a = 2 * (c2.a - c1.a);
 	long long b = 2 * (c2.b - c1.b);
 	long long c = c1.a * c1.a - c2.a * c2.a + c1.b * c1.b - c2.b * c2.b + c2.r * c2.r - c1.r * c1.r;
+	long long distance_2 = (c1.a - c2.a) * (c1.a - c2.a) + (c1.b - c2.b) * (c1.b - c2.b);
+	long long r_2_out = (c1.r + c2.r) * (c1.r + c2.r);
+	long long r_2_in = (c1.r - c2.r) * (c1.r - c2.r);
 
 	// copy by line_intersect_circle
 	if (b != 0) {
 		// k exists
-		double A = (double)((double)a * a + (double)b * b) / (double)((double)b * b);
-		double B = (double)((double)c1.b * a * b - (double)c1.a * b * b + (double)a * c) * 2.0 / (double)((double)b * b);
+		double A = (double)(a * a + b * b) / (double)(b * b);
+		double B = (double)(c1.b * a * b - c1.a * b * b + a * c) * 2.0 / (double)(b * b);
 		double C = (double)((double)c1.a * c1.a + (double)c1.b * c1.b + (double)((double)c * c) / (double)((double)b * b) - (double)c1.r * c1.r + (double)(2.0 * c * c1.b) / (double)(b));
 		double delta = B * B - 4 * A * C;
-		if (Double::greater(delta, 0)) {
+		//cout << setprecision(16) << delta << endl;
+		// if (Double::greater(delta, 0)) {
+		if (distance_2 < r_2_out && distance_2 > r_2_in) {
 			double res1_x = (double)(-B + sqrt(delta)) / (double)(2.0 * A);
 			double res2_x = (double)(-B - sqrt(delta)) / (double)(2.0 * A);
 			double res1_y = (double)(-c - a * res1_x) / (double)b;
@@ -380,10 +404,15 @@ void GeometryFactory::circle_circle_intersect(Circle &c1, Circle &c2) {
 			Point *p1 = new Point(res1_x, res1_y);
 			Point *p2 = new Point(res2_x, res2_y);
 			
+			/*if (res1_x >= -290.894 && res1_x <= -290.892 && res1_y >= -59.848 && res1_y <= -59.846) {
+				double tmp = 8;
+			}*/
+
 			increase_point(p1);
 			increase_point(p2);
 		}
-		else if (Double::equal(delta, 0)) {
+		// else if (Double::equal(delta, 0)) {
+		else if (distance_2 == r_2_out || distance_2 == r_2_in) {
 			double res_x = (double)(-B) / (2 * A);
 			double res_y = (double)(-c - a * res_x) / (double)b;
 			Point *p = new Point(res_x, res_y);
@@ -392,18 +421,24 @@ void GeometryFactory::circle_circle_intersect(Circle &c1, Circle &c2) {
 		}
 	}
 	else {
-		double x1 = (double)((double)c1.r * c1.r - (double)c2.r * c2.r + (double)c2.b * c2.b - (double)c1.b * c1.b + (double)c2.a * c2.a - (double)c1.a * c1.a) / (double)(2.0 * ((double)c2.a - c1.a));
+		double x1 = (double)(c1.r * c1.r - c2.r * c2.r + c2.b * c2.b - c1.b * c1.b + c2.a * c2.a - c1.a * c1.a) / (double)(2.0 * (c2.a - c1.a));
 		double delta_y_2 = (double)c1.r * c1.r - ((double)x1 - (double)c1.a) * ((double)x1 - (double)c1.a);
-		if (Double::greater(delta_y_2, 0)) {
+		// if (Double::greater(delta_y_2, 0)) {
+		if (distance_2 < r_2_out && distance_2 > r_2_in) {
 			double res_y1 = sqrt(delta_y_2) + c1.b;
 			double res_y2 = -sqrt(delta_y_2) + c1.b;
 			Point *p1 = new Point((double)x1, res_y1);
 			Point *p2 = new Point((double)x1, res_y2);
+
+			/*if (x1 >= 1071.799 && x1 <= 1071.801 && res_y1 >= -26.601 && res_y1 <= -26.599) {
+				double tmp = 8;
+			}*/
 			
 			increase_point(p1);
 			increase_point(p2);
 		}
-		else if (Double::equal(delta_y_2, 0)) {
+		// else if (Double::equal(delta_y_2, 0)) {
+		else if (distance_2 == r_2_out || distance_2 == r_2_in) {
 			Point *p = new Point((double)x1, (double)c1.b);
 
 			increase_point(p);

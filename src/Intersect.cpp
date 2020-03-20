@@ -1,5 +1,6 @@
 ﻿#include "stdafx.h"
 #include <iostream>
+#include <cstdio>
 #include "GeometryStatistic.h"
 #include "Point.h"
 #include "Reader.h"
@@ -32,7 +33,7 @@ int main(int argc, char* argv[])
 		//cout << statistic->getPointsCount() << endl;
 		/*auto v = statistic->getPoints();
 		for (auto i = v.begin(); i != v.end(); ++i) {
-			cout << i->toString() << endl;
+			printf("%.3lf,%.3lf\n", i->x, i->y);
 		}*/
 		//cout << statistic->rational_points->size() << endl;
 		//cout << statistic->unrational_points->size() << endl;
