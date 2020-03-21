@@ -55,13 +55,13 @@ void Reader::command_analysis(int argc, char* argv[]) {
 void Reader::error_handle(string message, int type)
 {
 	if (type == 0) {
-		cout << "The program has been interrupt when analyzing command line parameter, here are the error messages:" << endl << endl;
-		cout << message << endl;
+		cerr << "The program has been interrupt when analyzing command line parameter, here are the error messages:" << endl << endl;
+		cerr << message << endl;
 		exit(0);
 	}
 	else {
-		cout << "The program has been interrupt when executing calculator, here are the error messages:" << endl << endl;
-		cout << message << endl;
+		cerr << "The program has been interrupt when executing calculator, here are the error messages:" << endl << endl;
+		cerr << message << endl;
 		exit(0);
 	}
 }
@@ -89,30 +89,10 @@ void Reader::exec() {
 		try {
 			this->g->addObjectFromFile(line);
 		}
-		catch (CoordinateRangeException e) {
+		catch (exception &e) {
 			error_handle("We got something wrong at line " + to_string(lines) + ":\n\t" + string(e.what()));
 		}
-		catch (CoordinateCoincidenceException e) {
-			error_handle("We got something wrong at line " + to_string(lines) + ":\n\t" + string(e.what()));
-		}
-		catch (LineCoincidenceException e) {
-			error_handle("We got something wrong at line " + to_string(lines) + ":\n\t" + string(e.what()));
-		}
-		catch (CircleCoincidenceException e) {
-			error_handle("We got something wrong at line " + to_string(lines) + ":\n\t" + string(e.what()));
-		}
-		catch (NegativeRadiusException e) {
-			error_handle("We got something wrong at line " + to_string(lines) + ":\n\t" + string(e.what()));
-		}
-		catch (UndefinedLineException e) {
-			error_handle("We got something wrong at line " + to_string(lines) + ":\n\t" + string(e.what()));
-		}
-		catch (ObjectNotFoundException e) {
-			error_handle("We got something wrong at line " + to_string(lines) + ":\n\t" + string(e.what()));
-		}
-		catch (WrongFormatException e) {
-			error_handle("We got something wrong at line " + to_string(lines) + ":\n\t" + string(e.what()));
-		}
+		
 	}
 	if (cinbackup != NULL) {
 		cin.rdbuf(cinbackup);

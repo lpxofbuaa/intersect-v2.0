@@ -13,7 +13,7 @@ public:
 	double y;
 	Point();
 	Point(double a, double b);
-	bool equals(const Point &b) const;
+	bool point_equals(const Point &b) const;
 	string toString();
 };
 

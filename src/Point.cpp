@@ -14,9 +14,9 @@ Point::Point(double a, double b) {
 	y = b;
 }
 
-bool Point::equals(const Point & b) const
+bool Point::point_equals(const Point & b) const
 {
-	return Double::equal(this->x, b.x) && Double::equal(this->y, b.y);
+	return equals(this->x, b.x) && equals(this->y, b.y);
 }
 
 string Point::toString()
@@ -25,8 +25,8 @@ string Point::toString()
 }
 
 size_t point_hash::operator()(Point* const& a) const {
-	size_t a_hash = Double::hash(a->x);
-	size_t b_hash = Double::hash(a->y);
+	size_t a_hash = hashcode(a->x);
+	size_t b_hash = hashcode(a->y);
 	return a_hash ^ (b_hash << 1u);
 }
 
@@ -35,6 +35,6 @@ size_t point_hash::operator()(Point* const& a) const {
  * todo：epsilon大小的选取，若整数范围的数据很大，则小数点后的精度要求过高。（相同的大整数，但在1e-10层级的小数值可能不同)。
 */
 bool point_equal::operator()(Point* const& a, Point* const& b) const {
-	return a->equals(*b);
+	return a->point_equals(*b);
 }
 

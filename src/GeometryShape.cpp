@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "GeometryShape.h"
 #include "Constant.h"
-#
+#include "DoubleUtils.h"
 
 Line::Line(long long x1, long long y1, long long x2, long long y2, int type) {
 	this->x1 = x1;
@@ -76,13 +76,13 @@ LineKey::LineKey(double k, double b) {
 }
 
 size_t line_key_hash::operator()(LineKey const& a) const {
-	size_t h1 = Double::hash(a.k);
-	size_t h2 = Double::hash(a.b);
+	size_t h1 = hashcode(a.k);
+	size_t h2 = hashcode(a.b);
 	return h1 ^ (h2 << 1u);
 }
 
 bool line_key_equal::operator()(LineKey const& a, LineKey const& b) const {
-	return Double::equal(a.k, b.k) && Double::equal(a.b, b.b);
+	return equals(a.k, b.k) && equals(a.b, b.b);
 }
 
 size_t circle_hash::operator()(Circle const & a) const
