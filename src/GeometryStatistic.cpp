@@ -216,6 +216,7 @@ void GeometryFactory::increase_point(Point* point) {
 	PointMap::iterator value = points.find(point);
 	if (value != points.end()) {
 		value->second += 1;
+		delete(point);
 	}
 	else {
 		points[point] = 1;
@@ -229,6 +230,7 @@ void GeometryFactory::decrease_point(Point* p) {
 		if (value->second == 0) {
 			points.erase(value);
 		}
+		delete p;
 	}
 }
 
