@@ -4,13 +4,14 @@
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace std;
-#include "../Intersect/Exception.h"
-#include "../Intersect/Constant.h"
-#include "../Intersect/GeometryShape.h"
-#include "../Intersect/GeometryStatistic.h"
-#include "../Intersect/Point.h"
-#include "../Intersect/GeometryCalculator.h"
-#include "../Intersect/DoubleUtils.h"
+#include "../src/Exception.h"
+#include "../src/Constant.h"
+#include "../src/GeometryShape.h"
+#include "../src/GeometryStatistic.h"
+#include "../src/Point.h"
+#include "../src/GeometryCalculator.h"
+#include "../src/DoubleUtils.h"
+#include "../src/Reader.h"
 #define CHECK Assert::AreEqual 
 
 namespace CoreTest
@@ -80,11 +81,11 @@ namespace CoreTest
 
 		TEST_METHOD(DoubleTest)
 		{
-			CHECK(Double::equal(0.20000000000000001, 0.19999999999999991), true);
-			CHECK(Double::hash(0.20000000000000001), Double::hash(0.19999999999999991));
-			CHECK(Double::equal(0.00000000000000001234, 0.0), true);
-			CHECK(Double::hash(0.00000000000000001234), Double::hash(0.0));
-			CHECK(Double::equal(12345678901234.55677889, 12345678901234.557789), true);
+			CHECK(equals(0.20000000000000001, 0.19999999999999991), true);
+			CHECK(hashcode(0.20000000000000001), hashcode(0.19999999999999991));
+			CHECK(equals(0.00000000000000001234, 0.0), true);
+			CHECK(hashcode(0.00000000000000001234), hashcode(0.0));
+			CHECK(equals(12345678901234.55677889, 12345678901234.557789), true);
 		}
 
 
@@ -96,10 +97,10 @@ namespace CoreTest
 			Line l2(3, 4, -10, -33, SINGLE_INFINITE_LINE);
 			Line l3(-3, -4, -6, -8, SINGLE_INFINITE_LINE);
 			Line l4(0, 0, 1, 1, DOUBLE_INFINITE_LINE);
-			CHECK(test->point_in_line_range(p, l1), true);
-			CHECK(test->point_in_line_range(p, l2), true);
-			CHECK(test->point_in_line_range(p, l3), false);
-			CHECK(test->point_in_line_range(p, l4), true);
+			CHECK(test->point_in_line_range(3.0, 4.0, l1), true);
+			CHECK(test->point_in_line_range(3.0, 4.0, l2), true);
+			CHECK(test->point_in_line_range(3.0, 4.0, l3), false);
+			CHECK(test->point_in_line_range(3.0, 4.0, l4), true);
 			delete(test);
 			delete(p);
 		}
@@ -135,7 +136,7 @@ namespace CoreTest
 			delete p3;
 		}
 
-		TEST_METHOD(line_line_intersect)
+		TEST_METHOD(line_line_intersect_1)
 		{
 			GeometryFactory *test = new GeometryFactory();
 			vector<Point> p;
@@ -146,15 +147,338 @@ namespace CoreTest
 			test->line_line_intersect(l1, l2);
 			p = test->getPoints();
 			CHECK((int)p.size(), 1);
-			CHECK(p[0].equals(p1), true);
+			CHECK(p[0].point_equals(p1), true);
 			test->line_line_intersect(l1, l3);
 			CHECK((int)p.size(), 1);
-			CHECK(p[0].equals(p1), true);
+			CHECK(p[0].point_equals(p1), true);
 			test->line_line_intersect(l2, l3);
 			CHECK((int)p.size(), 1);
-			CHECK(p[0].equals(p1), true);
+			CHECK(p[0].point_equals(p1), true);
 			delete test;
 		}
+
+		TEST_METHOD(line_line_intersect_2)
+		{
+			GeometryFactory test;
+			CHECK(1, test.addLine(LIMITED_LINE, 0, 2, 0, 2));
+			CHECK(3, test.addLine(LIMITED_LINE, 0, 2, 0, 4));
+			CHECK(5, test.addLine(LIMITED_LINE, 2, 54, 2, 322));
+			CHECK(7, test.addLine(LIMITED_LINE, 3222, 0, -35, 0));
+			CHECK(9, test.addLine(LIMITED_LINE, 99932, 2, 22, 2));
+		}
+
+		TEST_METHOD(add_line_test_1)
+		{
+			GeometryFactory test;
+			CHECK(1,test.addLine(DOUBLE_INFINITE_LINE, 0, 1, 0, 1));
+			CHECK(3, test.addLine(DOUBLE_INFINITE_LINE, 0, 2, 0, 4));
+			bool catch_flag = false;
+			try {
+				test.addLine(SINGLE_INFINITE_LINE, 0, -1, 0, -1);
+			}
+			catch (LineCoincidenceException &e) {
+				catch_flag = true;
+				CHECK("Error: this line has been coincident!", e.what());
+			}
+			CHECK(true, catch_flag);
+		}
+
+		TEST_METHOD(add_line_test_2)
+		{
+			GeometryFactory test;
+			CHECK(1, test.addLine(LIMITED_LINE, 0, 2, 0, 2));
+			CHECK(3, test.addLine(SINGLE_INFINITE_LINE, 0, -1, 0, -1));
+			
+			bool catch_flag = false;
+			try {
+				test.addLine(SINGLE_INFINITE_LINE, 1, 4, 1, 4);
+			}
+			catch (LineCoincidenceException &e) {
+				catch_flag = true;
+				CHECK("Error: this line has been coincident!", e.what());
+			}
+			CHECK(true, catch_flag);
+			catch_flag = false;
+			try {
+				test.addLine(LIMITED_LINE, 1, -1, 1, -1);
+			}
+			catch (LineCoincidenceException &e) {
+				catch_flag = true;
+				CHECK("Error: this line has been coincident!", e.what());
+			}
+			CHECK(true, catch_flag);
+			catch_flag = false;
+		}
+
+		TEST_METHOD(add_line_test_3)
+		{
+			GeometryFactory test;
+			CHECK(1, test.addLine(DOUBLE_INFINITE_LINE, 0, 1, 0, 1));
+			bool flag = false;
+			try {
+				test.addLine(DOUBLE_INFINITE_LINE, 0, 0, 1, 1);
+			}
+			catch (CoordinateCoincidenceException &e) {
+				CHECK("Error: coordinate coincident!", e.what());
+				flag = true;
+			}
+			CHECK(true, flag);
+
+			flag = false;
+			try {
+				test.addLine(DOUBLE_INFINITE_LINE, 100000, 0, 0, 0);
+			}
+			catch (CoordinateRangeException &e) {
+				CHECK("Error: coordinate is out of range!", e.what());
+				flag = true;
+			}
+			CHECK(true, flag);
+
+			flag = false;
+			try {
+				test.addLine(DOUBLE_INFINITE_LINE, -100000, 0, 0, 0);
+			}
+			catch (CoordinateRangeException &e) {
+				CHECK("Error: coordinate is out of range!", e.what());
+				flag = true;
+			}
+			CHECK(true, flag);
+
+			flag = false;
+			try {
+				test.addLine(5, 1000, 0, 0, 0);
+			}
+			catch (UndefinedLineException &e) {
+				CHECK("Error: undefined line type!", e.what());
+				flag = true;
+			}
+			CHECK(true, flag);
+		}
+
+		TEST_METHOD(add_circle_test1) 
+		{
+			GeometryFactory test;
+			CHECK(0, test.addCircle(0, 0, 3));
+			CHECK(2, test.addCircle(0, 0, 8));
+			bool flag = false;
+
+			try {
+				test.addCircle(0, 0, -4);
+			}
+			catch (NegativeRadiusException &e) {
+				flag = true;
+				CHECK("Error: radius of circle is illegal!", e.what());
+			}
+			CHECK(true, flag);
+
+			flag = false;
+			try {
+				test.addCircle(0, 0, 100000);
+			}
+			catch (CoordinateRangeException &e) {
+				flag = true;
+				CHECK("Error: coordinate is out of range!", e.what());
+			}
+			CHECK(true, flag);
+
+			flag = false;
+			try {
+				test.addCircle(0, -100000, 10000);
+			}
+			catch (CoordinateRangeException &e) {
+				flag = true;
+				CHECK("Error: coordinate is out of range!", e.what());
+			}
+			CHECK(true, flag);
+
+			flag = false;
+			try {
+				test.addCircle(0, 0, 3);
+			}
+			catch (CircleCoincidenceException &e) {
+				flag = true;
+				CHECK("Error: this circle has been added!", e.what());
+			}
+			CHECK(true, flag);
+		}
+
+		TEST_METHOD(add_line_add_circle) 
+		{
+			GeometryFactory test;
+			CHECK(1, test.addLine(DOUBLE_INFINITE_LINE, 0, 324, 0, 332));
+			CHECK(3, test.addLine(DOUBLE_INFINITE_LINE, 0, -3, 0, 322));
+			CHECK(0, test.addCircle(0, 0, 8));
+			CHECK(2, test.addCircle(0, 0, 7));
+			CHECK(5, test.addLine(DOUBLE_INFINITE_LINE, -32, -33, 32, 22));
+		}
+
+		TEST_METHOD(line_circle_intersect_1)
+		{
+			Circle c1(0, 0, 1);
+			Line l1(1, 0, 1, 43, DOUBLE_INFINITE_LINE);
+			GeometryFactory test;
+			test.line_circle_intersect(l1, c1);
+			CHECK(test.getPointsCount(), 1);
+			Line l2(2, 0, 2, 932, DOUBLE_INFINITE_LINE);
+			test.line_circle_intersect(l2, c1);
+			CHECK(test.getPointsCount(), 1);
+			Line l3(0, 0, 0, 32, DOUBLE_INFINITE_LINE);
+			test.line_circle_intersect(l3, c1);
+			CHECK(test.getPointsCount(), 3);
+			Line l4(-1, 1, 4, 1, DOUBLE_INFINITE_LINE);
+			test.line_circle_intersect(l4, c1);
+			CHECK(test.getPointsCount(), 3);
+		}
+
+		TEST_METHOD(circle_circle_intersect_1)
+		{
+			Circle c1(3, 8, 9);
+			Circle c2(8, -4, 4);
+			GeometryFactory test;
+			test.circle_circle_intersect(c1, c2);
+			CHECK(1, test.getPointsCount());
+		}
+
+		TEST_METHOD(circle_circle_intersect_2)
+		{
+			Circle c1(0, 0, 2);
+			Circle c2(3, 0, 1);
+			GeometryFactory test;
+			test.circle_circle_intersect(c1, c2);
+			CHECK(1, test.getPointsCount());
+			Circle c3(-1, 0, 2);
+			test.circle_circle_intersect(c1, c3);
+			CHECK(3, test.getPointsCount());
+		}
+
+		TEST_METHOD(circle_circle_intersect_3)
+		{
+			Circle c1(0, 0, 42);
+			Circle c2(25, 25, 10);
+			GeometryFactory test;
+			test.circle_circle_intersect(c1, c2);
+			CHECK(2, test.getPointsCount());
+		}
+
+		TEST_METHOD(get_line_remove_line)
+		{
+			GeometryFactory test;
+			CHECK(1, test.addLine(DOUBLE_INFINITE_LINE, 0, 3, 0, 3));
+			CHECK(3, test.addLine(DOUBLE_INFINITE_LINE, 0, 43, 0, 23));
+			Line l = test.getLine(1);
+			CHECK((int)l.x1, 0);
+			CHECK((int)l.x2, 3);
+			CHECK((int)l.y1, 0);
+			CHECK((int)l.y2, 3);
+			CHECK((size_t)2, test.line_ids.size());
+			test.remove(1);
+			CHECK((size_t)1, test.line_ids.size());
+			bool flag = false;
+			try {
+				test.remove(33);
+			}
+			catch (ObjectNotFoundException &e) {
+				CHECK("Error: line not found or invalid id!", e.what());
+				flag = true;
+			}
+			CHECK(true, flag);
+		}
+
+		TEST_METHOD(get_circle)
+		{
+			GeometryFactory test;
+			CHECK(0, test.addCircle(0, 0, 3));
+			CHECK(2, test.addCircle(1, 1, 3));
+			Circle c = test.getCircle(0);
+			CHECK((int)c.a, 0);
+			CHECK((int)c.b, 0);
+			CHECK((int)c.r, 3);
+			CHECK((size_t)2, test.circle_ids.size());
+			test.remove(0);
+			CHECK((size_t)1, test.circle_ids.size());
+			bool flag = false;
+			try {
+				test.remove(22);
+			}
+			catch (ObjectNotFoundException &e) {
+				CHECK("Error: circle not found or invalid id!", e.what());
+				flag = true;
+			}
+			CHECK(true, flag);
+		}
+
+		TEST_METHOD(add_Object_from_file)
+		{
+			GeometryFactory test;
+			test.addObjectFromFile(string("L 0 0 1 1"));
+			test.addObjectFromFile(string("S 0 0 -1 1"));
+			test.addObjectFromFile(string("R 0 0 1 -1"));
+			Line l = test.getLine(1);
+			CHECK((int)l.x1, 0);
+			CHECK((int)l.y1, 0);
+			CHECK((int)l.x2, 1);
+			CHECK((int)l.y2, 1);
+			test.addObjectFromFile(string("C 0 0 3"));
+			Circle c = test.getCircle(0);
+			CHECK((int)c.a, 0);
+			CHECK((int)c.b, 0);
+			CHECK((int)c.r, 3);
+			bool flag = false;
+			try {
+				test.addObjectFromFile(string("L 0 0 0 0 0"));
+			}
+			catch (WrongFormatException &e) {
+				flag = true;
+				CHECK("Error: we got the wrong format input!", e.what());
+			}
+			CHECK(true, flag);
+		}
+
+		TEST_METHOD(exception_test)
+		{
+			try {
+				throw CoordinateCoincidenceException();
+			}
+			catch (CoordinateCoincidenceException &e) {}
+			try {
+				throw CoordinateRangeException();
+			}
+			catch (CoordinateRangeException &e) {}
+			try {
+				throw NegativeRadiusException();
+			}
+			catch (NegativeRadiusException &e) {}
+			try {
+				throw LineCoincidenceException();
+			}
+			catch (LineCoincidenceException &e) {}
+			try {
+				throw UndefinedLineException();
+			}
+			catch (UndefinedLineException &e) {}
+			try {
+				throw ObjectNotFoundException();
+			}
+			catch (ObjectNotFoundException &e) {}
+			try {
+				throw WrongFormatException();
+			}
+			catch (WrongFormatException &e) {}
+		}
+
+		TEST_METHOD(point_test)
+		{
+			Point p;
+			p.x = 1;
+			p.y = 32;
+			struct double_equal e;
+			CHECK(e(1, p.x), true);
+			CHECK(e(32, p.y), true);
+			Point pp = Point(23.33, 32.22);
+			CHECK(e(23.33, pp.x), true);
+			CHECK(e(32.22, pp.y), true);
+		}
+
 
 	};
 }
