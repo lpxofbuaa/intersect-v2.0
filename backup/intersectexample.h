@@ -17,6 +17,11 @@ public:
     Circle getCircle(int id);
     vector<Point> getPoints();
     int getPointsCount();
+    int addLine(int type, int x1, int y1, int x2, int y2);
+    int addCircle(int x, int y, int r);
+    int addObjectFromFile(string & message);
+
+    void remove(int id);
 };
 
 struct LineKey{

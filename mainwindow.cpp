@@ -41,23 +41,21 @@
 
 #include "mainwindow.h"
 #include "../build-plot-examples-Desktop_Qt_5_14_1_MinGW_64_bit-Debug/ui_mainwindow.h"
-#include "intersectexample.h"
-#include "plot_utils.h"
 #include <QDebug>
 #include <QDesktopWidget>
 #include <QScreen>
 #include <QMessageBox>
 #include <QMetaEnum>
 
-MainWindow::MainWindow(QWidget *parent) :
+MainWindow::MainWindow(GeometryFactory* intersect, QWidget *parent) :
   QMainWindow(parent),
+  intersect(intersect),
   ui(new Ui::MainWindow)
 {
   ui->setupUi(this);
   setGeometry(400, 250, 542, 390);
   setupDemo(20);
-  software_init();
-  
+  software_init();  
   // for making screenshots of the current demo or all demos (for website screenshots):
   //QTimer::singleShot(1500, this, SLOT(allScreenShots()));
   //QTimer::singleShot(4000, this, SLOT(screenShot()));
@@ -80,12 +78,14 @@ void MainWindow::setupDemo(int demoIndex)
   ui->customPlot->replot();
 }
 
+
 void MainWindow::softwarePlot(QCustomPlot *customPlot)
 {
+    /*
     customPlot->addGraph();
     customPlot->addGraph();
     customPlot->addGraph();
-    IntersectExample* inter = intersect;
+    // IntersectExample* inter = intersect;
     customPlot->graph(0);
     auto l1 = inter->getLine(1);
     auto l2 = inter->getLine(2);
@@ -115,7 +115,9 @@ void MainWindow::softwarePlot(QCustomPlot *customPlot)
     // Note: we could have also just called customPlot->rescaleAxes(); instead
     // Allow user to drag axis ranges with mouse, zoom with mouse wheel and select graphs by clicking:
     customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    */
 }
+
 
 void MainWindow::setupQuadraticDemo(QCustomPlot *customPlot)
 {

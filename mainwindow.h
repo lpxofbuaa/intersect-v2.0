@@ -42,12 +42,13 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "intersectexample.h"
+#include "export/lib/GeometryCore.h"
 #include <QMainWindow>
 #include <QTimer>
 #include <map>
 #include <vector>
 #include "../../qcustomplot.h" // the header file of QCustomPlot. Don't forget to add it to your project, if you use an IDE, so it gets compiled.
+#pragma comment(lib,"export/lib/GeometryCore.lib")
 
 namespace Ui {
 class MainWindow;
@@ -65,7 +66,7 @@ public:
   // === BEGIN ===
   QCustomPlot* customPlot;
 
-  IntersectExample* intersect;
+  GeometryFactory* intersect;
   map<int, int> id_graph;
   int graph_count;  // to count graphs, each graph contains a_line/a_circle/all_intersects.
   long long x_max, x_min, y_max, y_min;
@@ -80,7 +81,7 @@ public:
   void update_scale_by_intersects(vector<Point> intersect);
   // ===  END  ===
 
-  explicit MainWindow(QWidget *parent = 0);
+  explicit MainWindow(GeometryFactory* intersect, QWidget *parent = 0);
   ~MainWindow();
 
   void softwarePlot(QCustomPlot *customPlot);

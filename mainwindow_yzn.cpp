@@ -78,8 +78,8 @@ int MainWindow::add_one_line(Line l, int id){
         y.push_back(max_bound); x.push_back(l.x2);
     }
     else{
-        x.push_back(min_bound); y.push_back(min_bound * l.key.k + l.key.b);
-        x.push_back(max_bound); y.push_back(max_bound * l.key.k + l.key.b);
+        x.push_back(min_bound); y.push_back(min_bound * l.k.k + l.k.b);
+        x.push_back(max_bound); y.push_back(max_bound * l.k.k + l.k.b);
     }
 
     this->customPlot->graph(this->graph_count)->setData(x, y);
@@ -99,8 +99,8 @@ int MainWindow::add_one_circle(Circle c, int id){
 
     QVector<double> x, y;
     for(int angle = 0; angle <= 360; angle++){
-        double rel_x = cos(angle * 1.0 / 360 * std::_Pi);
-        double rel_y = sin(angle * 1.0 / 360 * std::_Pi);
+        double rel_x = cos(angle * 1.0 / 360 * 3.14159265);
+        double rel_y = sin(angle * 1.0 / 360 * 3.14159265);
         x.push_back(double(c.a) + rel_x);
         y.push_back(double(c.b) + rel_y);
     }
@@ -116,7 +116,8 @@ int MainWindow::add_one_circle(Circle c, int id){
 int MainWindow::remove_object(int id){
     int graph_id = id_graph[id];
     QVector<double> a(0), b(0);
-    this->customPlot->graph(0)->setData(a, b);
+    this->customPlot->graph(graph_id)->setData(a, b);
+    return 1;
 }
 
 // private

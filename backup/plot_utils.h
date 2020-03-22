@@ -2,9 +2,10 @@
 #define PLOT_UTILS_H
 
 #include<iostream>
-#include "intersectexample.h"
+#include "export/lib/GeometryCore.h"
 #include <QDebug>
 #include <QMetaEnum>
+#pragma comment(lib,"export/lib/GeometryCore.lib")
 
 using namespace std;
 
