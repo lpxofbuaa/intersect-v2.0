@@ -1,19 +1,22 @@
+#include "stdafx.h"
 #include "Reader.h"
 #include <regex>
 #include <sstream>
+#include <cstdio>
 //#pragma comment(lib,"GeometryCore.lib")
 
-Reader::Reader(int argc, char* argv[], GeometryFactory *gg) {
+Reader::Reader(int ac, char* av[], GeometryFactory *gg) {
 	g = gg;
-	command_analysis(argc, argv);
+	// reader = new ifstream("28190067or6.txt");
+	command_analysis(ac, av);
 }
 
-void Reader::command_analysis(int argc, char* argv[]) {
-	for (int i = 1; i < argc; ++i) {
-		if (strlen(argv[i]) == 2 && argv[i][0] == '-' && argv[i][1] == 'i') {
+void Reader::command_analysis(int ac, char* av[]) {
+	for (int i = 1; i < ac; ++i) {
+		if (strlen(av[i]) == 2 && av[i][0] == '-' && av[i][1] == 'i') {
 			if (reader == NULL) {
-				if (i + 1 < argc) {
-					string filename = argv[i + 1];
+				if (i + 1 < ac) {
+					string filename = av[i + 1];
 					this->reader = new ifstream(filename);
 					if (not this->reader->is_open()) {
 						error_handle(string("Open file " + filename + " fail!"), 0);
@@ -28,10 +31,10 @@ void Reader::command_analysis(int argc, char* argv[]) {
 				error_handle("-i parameter can only be given once!", 0);
 			}
 		}
-		else if (strlen(argv[i]) == 2 && argv[i][0] == '-' && argv[i][1] == 'o') {
+		else if (strlen(av[i]) == 2 && av[i][0] == '-' && av[i][1] == 'o') {
 			if (writer == NULL) {
-				if (i + 1 < argc) {
-					string filename = argv[i + 1];
+				if (i + 1 < ac) {
+					string filename = av[i + 1];
 					this->writer = new ofstream(filename);
 					if (not this->writer->is_open()) {
 						error_handle("Open file " + filename + " fail!", 0);
@@ -75,7 +78,7 @@ void Reader::exec() {
 	string line;
 	getline(cin, line);
 	regex number("^\\d+$");
-	int n;
+	int n = 0;
 	if (regex_match(line, number)) {
 		stringstream s(line);
 		s >> n;
@@ -107,5 +110,15 @@ void Reader::dump() {
 	cout << this->g->getPointsCount() << endl;
 	if (coutbackup != NULL) {
 		cout.rdbuf(coutbackup);
+	}
+}
+
+void Reader::debug() {
+	vector<Point> results = g->getPoints();
+	cout << results.size() << endl;
+	//cout << g->getPointsCount() << endl;
+	for (auto i = results.begin(); i != results.end(); ++i) {
+		// printf("??\n");
+		printf("%.3lf,%.3lf\n", i->x, i->y);
 	}
 }

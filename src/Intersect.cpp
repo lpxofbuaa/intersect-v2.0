@@ -1,4 +1,5 @@
-﻿#include <iostream>
+﻿#include "stdafx.h"
+#include <iostream>
 #include <cstdio>
 #include "GeometryCalculator.h"
 #include "Reader.h"
@@ -11,6 +12,7 @@ int main(int argc, char* argv[])
 	Reader r(argc, argv, new GeometryFactory());
 	r.exec();
 	r.dump();
+	// r.debug();
 }
 
 

@@ -19,4 +19,5 @@ public:
 	Reader(int argc, char* argv[], GeometryFactory *g);
 	void exec();
 	void dump();
+	void debug();
 };

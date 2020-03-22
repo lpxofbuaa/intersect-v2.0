@@ -19,11 +19,6 @@ bool Point::point_equals(const Point & b) const
 	return equals(this->x, b.x) && equals(this->y, b.y);
 }
 
-string Point::toString()
-{
-	return string(to_string(this->x) + "," + to_string(this->y));
-}
-
 size_t point_hash::operator()(Point* const& a) const {
 	size_t a_hash = hashcode(a->x);
 	size_t b_hash = hashcode(a->y);

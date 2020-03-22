@@ -14,7 +14,6 @@ public:
 	Point();
 	Point(double a, double b);
 	bool point_equals(const Point &b) const;
-	string toString();
 };
 
 
