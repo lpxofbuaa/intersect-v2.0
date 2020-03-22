@@ -45,6 +45,8 @@
 #include "intersectexample.h"
 #include <QMainWindow>
 #include <QTimer>
+#include <map>
+#include <vector>
 #include "../../qcustomplot.h" // the header file of QCustomPlot. Don't forget to add it to your project, if you use an IDE, so it gets compiled.
 
 namespace Ui {
@@ -54,9 +56,29 @@ class MainWindow;
 class MainWindow : public QMainWindow
 {
   Q_OBJECT
-  
+
 public:
+  /*
+   * Added for BUAA software pair project.
+   * By. YZN, LPX
+   */
+  // === BEGIN ===
+  QCustomPlot* customPlot;
+
   IntersectExample* intersect;
+  map<int, int> id_graph;
+  int graph_count;  // to count graphs, each graph contains a_line/a_circle/all_intersects.
+  long long x_max, x_min, y_max, y_min;
+
+  int refresh_intersects(std::vector<Point> intersects);
+  int add_one_line(Line l, int id);
+  int add_one_circle(Circle c, int id);
+  int remove_object(int id);
+
+  // private
+  void software_init();
+  void update_scale_by_intersects(vector<Point> intersect);
+  // ===  END  ===
 
   explicit MainWindow(QWidget *parent = 0);
   ~MainWindow();
@@ -70,29 +92,15 @@ public:
   void setupScatterStyleDemo(QCustomPlot *customPlot);
   void setupLineStyleDemo(QCustomPlot *customPlot);
   void setupScatterPixmapDemo(QCustomPlot *customPlot);
-//  void setupDateDemo(QCustomPlot *customPlot);
-//  void setupTextureBrushDemo(QCustomPlot *customPlot);
-//  void setupMultiAxisDemo(QCustomPlot *customPlot);
-//  void setupLogarithmicDemo(QCustomPlot *customPlot);
-//  void setupRealtimeDataDemo(QCustomPlot *customPlot);
-//  void setupParametricCurveDemo(QCustomPlot *customPlot);
-//  void setupBarChartDemo(QCustomPlot *customPlot);
-//  void setupStatisticalDemo(QCustomPlot *customPlot);
-//  void setupSimpleItemDemo(QCustomPlot *customPlot);
-//  void setupItemDemo(QCustomPlot *customPlot);
-//  void setupStyledDemo(QCustomPlot *customPlot);
-//  void setupAdvancedAxesDemo(QCustomPlot *customPlot);
-//  void setupColorMapDemo(QCustomPlot *customPlot);
-//  void setupFinancialDemo(QCustomPlot *customPlot);
-  
+
   void setupPlayground(QCustomPlot *customPlot);
-  
+
 private slots:
   void realtimeDataSlot();
   void bracketDataSlot();
   void screenShot();
   void allScreenShots();
-  
+
 private:
   Ui::MainWindow *ui;
   QString demoName;

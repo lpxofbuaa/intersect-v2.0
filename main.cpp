@@ -25,6 +25,7 @@
 
 #include <QApplication>
 #include "mainwindow.h"
+#include "superwindow.h"
 
 int main(int argc, char *argv[])
 {
@@ -32,7 +33,9 @@ int main(int argc, char *argv[])
   QApplication::setGraphicsSystem("raster");
 #endif
   QApplication a(argc, argv);
-  MainWindow w;
+  // MainWindow w;
+  // w.show();
+  SuperWindow w;
   w.show();
   
   return a.exec();
