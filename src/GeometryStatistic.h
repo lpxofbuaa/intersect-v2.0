@@ -26,9 +26,9 @@ public:
 	int circle_counter = 0;										// Circle ID 累加器
 	double x_min, x_max, y_min, y_max;
 	bool is_init = true;
-	void line_line_intersect(Line &l1, Line &l2);				// 线线交点
-	void line_circle_intersect(Line &l1, Circle &c1);			// 线圆交点
-	void circle_circle_intersect(Circle &c1, Circle &c2);		// 圆圆交点
+	void line_line_intersect(Line &l1, Line &l2, bool increase=true);				// 线线交点
+	void line_circle_intersect(Line &l1, Circle &c1, bool increase = true);			// 线圆交点
+	void circle_circle_intersect(Circle &c1, Circle &c2, bool increase = true);		// 圆圆交点
 	inline void increase_point(Point* p);	//  ..
 	inline void decrease_point(Point* p);	//  ..
 	void removeLine(Line &l);									// 移除Line对象
