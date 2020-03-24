@@ -24,16 +24,16 @@ public:
 	IdCircleMap circle_ids;										// <ID, Circle>
 	int line_counter = 1;										// Line ID 累加器
 	int circle_counter = 0;										// Circle ID 累加器
-	void line_line_intersect(Line &l1, Line &l2);				// 线线交点
-	void line_circle_intersect(Line &l1, Circle &c1);			// 线圆交点
-	void circle_circle_intersect(Circle &c1, Circle &c2);		// 圆圆交点
+	void line_line_intersect(Line &l1, Line &l2, bool increase=true);				// 线线交点
+	void line_circle_intersect(Line &l1, Circle &c1, bool increase=true);			// 线圆交点
+	void circle_circle_intersect(Circle &c1, Circle &c2, bool increase=true);		// 圆圆交点
 	inline void increase_point(Point* p);	//  ..
 	inline void decrease_point(Point* p);	//  ..
 	void removeLine(Line &l);									// 移除Line对象
 	void removeCircle(Circle &c);								// 移除Circle对象
-	inline bool point_on_line(Point *p, Line &l);
-	inline bool point_on_circle(Point *p, Circle &c);
-	inline bool point_in_line_range(double x, double y, Line &l);
+	bool point_on_line(Point *p, Line &l);
+	bool point_on_circle(Point *p, Circle &c);
+	bool point_in_line_range(double x, double y, Line &l);
 public:
 	GeometryFactory();
 	/* Modification */
