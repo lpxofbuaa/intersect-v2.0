@@ -4,14 +4,7 @@
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace std;
-#include "../src/Exception.h"
-#include "../src/Constant.h"
-#include "../src/GeometryShape.h"
-#include "../src/GeometryStatistic.h"
-#include "../src/Point.h"
-#include "../src/GeometryCalculator.h"
-#include "../src/DoubleUtils.h"
-#include "../src/Reader.h"
+#include "../src/GeometryCore.h"
 #define CHECK Assert::AreEqual 
 
 namespace CoreTest
@@ -139,21 +132,24 @@ namespace CoreTest
 		TEST_METHOD(line_line_intersect_1)
 		{
 			GeometryFactory *test = new GeometryFactory();
-			vector<Point> p;
 			Line l1(1, 2, 3, 4, DOUBLE_INFINITE_LINE);
 			Line l2(1, 2, -1, 0, SINGLE_INFINITE_LINE);
 			Line l3(1, 2, 5, 8, LIMITED_LINE);
 			Point p1(1.0, 2.0);
 			test->line_line_intersect(l1, l2);
-			p = test->getPoints();
-			CHECK((int)p.size(), 1);
-			CHECK(p[0].point_equals(p1), true);
+			double *px = new double[test->getPointsCount()];
+			double *py = new double[test->getPointsCount()];
+			test->getPoints(px, py, test->getPointsCount());
+			CHECK(test->getPointsCount(), 1);
+			CHECK(Point(px[0], py[0]).point_equals(p1), true);
 			test->line_line_intersect(l1, l3);
-			CHECK((int)p.size(), 1);
-			CHECK(p[0].point_equals(p1), true);
+			test->getPoints(px, py, test->getPointsCount());
+			CHECK(test->getPointsCount(), 1);
+			CHECK(Point(px[0], py[0]).point_equals(p1), true);
 			test->line_line_intersect(l2, l3);
-			CHECK((int)p.size(), 1);
-			CHECK(p[0].point_equals(p1), true);
+			test->getPoints(px, py, test->getPointsCount());
+			CHECK(test->getPointsCount(), 1);
+			CHECK(Point(px[0], py[0]).point_equals(p1), true);
 			delete test;
 		}
 
@@ -410,22 +406,22 @@ namespace CoreTest
 		TEST_METHOD(add_Object_from_file)
 		{
 			GeometryFactory test;
-			test.addObjectFromFile(string("L 0 0 1 1"));
-			test.addObjectFromFile(string("S 0 0 -1 1"));
-			test.addObjectFromFile(string("R 0 0 1 -1"));
+			test.addObjectFromFile("L 0 0 1 1");
+			test.addObjectFromFile("S 0 0 -1 1");
+			test.addObjectFromFile("R 0 0 1 -1");
 			Line l = test.getLine(1);
 			CHECK((int)l.x1, 0);
 			CHECK((int)l.y1, 0);
 			CHECK((int)l.x2, 1);
 			CHECK((int)l.y2, 1);
-			test.addObjectFromFile(string("C 0 0 3"));
+			test.addObjectFromFile("C 0 0 3");
 			Circle c = test.getCircle(0);
 			CHECK((int)c.a, 0);
 			CHECK((int)c.b, 0);
 			CHECK((int)c.r, 3);
 			bool flag = false;
 			try {
-				test.addObjectFromFile(string("L 0 0 0 0 0"));
+				test.addObjectFromFile("L 0 0 0 0 0");
 			}
 			catch (WrongFormatException &e) {
 				flag = true;
