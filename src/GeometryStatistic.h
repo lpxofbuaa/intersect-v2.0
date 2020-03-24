@@ -24,6 +24,8 @@ public:
 	IdCircleMap circle_ids;										// <ID, Circle>
 	int line_counter = 1;										// Line ID 累加器
 	int circle_counter = 0;										// Circle ID 累加器
+	double x_min, x_max, y_min, y_max;
+	bool is_init = true;
 	void line_line_intersect(Line &l1, Line &l2);				// 线线交点
 	void line_circle_intersect(Line &l1, Circle &c1);			// 线圆交点
 	void circle_circle_intersect(Circle &c1, Circle &c2);		// 圆圆交点
@@ -43,7 +45,8 @@ public:
 	/* Query */
 	Line getLine(int id);										// Update
 	Circle getCircle(int id);									// For Update
-	void getPoints(double *px, double *py, int count);									// 
+	vector<Point> getPoints();									// 
 	int getPointsCount();										// Update
-	int addObjectFromFile(const char* message);							// Input File name point
+	int addObjectFromFile(string & message);							// Input File name point
+	void getBounder(vector<double> & ret);
 };

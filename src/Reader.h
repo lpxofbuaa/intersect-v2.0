@@ -3,9 +3,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#include "GeometryShape.h"
-#include "GeometryStatistic.h"
-#include "GeometryCore.h"
+#include "StdInterface.h"
 
 using namespace std;
 
@@ -13,11 +11,12 @@ class Reader {
 private:
 	ifstream *reader=NULL;
 	ofstream *writer=NULL;
-	GeometryFactory *g;
+	gFigure *fig;
+	string filename;
 	void command_analysis(int argc, char* argv[]);
 	void error_handle(string message, int type=-1);
 public:
-	Reader(int argc, char* argv[], GeometryFactory *g);
+	Reader(int argc, char* argv[]);
 	void exec();
 	void dump();
 	void debug();

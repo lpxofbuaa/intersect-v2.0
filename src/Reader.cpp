@@ -1,11 +1,12 @@
 #include "Reader.h"
+#include "StdInterface.h"
 #include <regex>
 #include <sstream>
 #include <cstdio>
-#include "GeometryCore.h"
+//#pragma comment(lib,"GeometryCore.lib")
 
-Reader::Reader(int ac, char* av[], GeometryFactory *gg) {
-	g = gg;
+Reader::Reader(int ac, char* av[]) {
+	fig = addFigure();
 	// reader = new ifstream("28190067or6.txt");
 	command_analysis(ac, av);
 }
@@ -15,10 +16,10 @@ void Reader::command_analysis(int ac, char* av[]) {
 		if (strlen(av[i]) == 2 && av[i][0] == '-' && av[i][1] == 'i') {
 			if (reader == NULL) {
 				if (i + 1 < ac) {
-					string filename = av[i + 1];
-					this->reader = new ifstream(filename);
+					this->filename = av[i + 1];
+					this->reader = new ifstream(this->filename);
 					if (not this->reader->is_open()) {
-						error_handle(string("Open file " + filename + " fail!"), 0);
+						error_handle(string("Open file " + this->filename + " fail!"), 0);
 					}
 					++i;
 				}
@@ -69,35 +70,15 @@ void Reader::error_handle(string message, int type)
 }
 
 void Reader::exec() {
-	streambuf *cinbackup=NULL;
-	int lines = 1;
+	ERROR_INFO ret;
 	if (reader != NULL) {
-		cinbackup = cin.rdbuf(reader->rdbuf());
-	}
-	string line;
-	getline(cin, line);
-	regex number("^\\d+$");
-	int n = 0;
-	if (regex_match(line, number)) {
-		stringstream s(line);
-		s >> n;
+		ret = addShapesToFigureFile(fig, (char*)filename.c_str());
 	}
 	else {
-		error_handle("We got the wrong message at line 1:\n\tPlease give the total of the objects");
+		ret = addShapesToFigureStdin(fig);
 	}
-	for (int i = 0; i < n; ++i) {
-		++lines;
-		getline(cin, line);
-		try {
-			this->g->addObjectFromFile(line.c_str());
-		}
-		catch (exception &e) {
-			error_handle("We got something wrong at line " + to_string(lines) + ":\n\t" + string(e.what()));
-		}
-		
-	}
-	if (cinbackup != NULL) {
-		cin.rdbuf(cinbackup);
+	if (ret.code != SUCCESS) {
+		error_handle(string(ret.messages));
 	}
 }
 
@@ -106,20 +87,18 @@ void Reader::dump() {
 	if (writer != NULL) {
 		coutbackup = cout.rdbuf(writer->rdbuf());
 	}
-	cout << this->g->getPointsCount() << endl;
+	cout << getPointsCount(fig) << endl;
 	if (coutbackup != NULL) {
 		cout.rdbuf(coutbackup);
 	}
 }
 
 void Reader::debug() {
-	double *px = new double[g->getPointsCount()];
-	double *py = new double[g->getPointsCount()];
-	g->getPoints(px, py, g->getPointsCount());
- 	// cout << results.size() << endl;
+	updatePoints(fig);
+	// cout << results.size() << endl;
 	//cout << g->getPointsCount() << endl;
-	for (auto i = 0; i != g->getPointsCount(); ++i) {
-		// printf("??\n");
-		printf("%.3lf,%.3lf\n", px[i], py[i]);
+	int count = getPointsCount(fig);
+	for (int i = 0; i < count; ++i) {
+		printf("%.3lf,%.3lf\n",fig->points[i].x, fig->points[i].y);
 	}
 }

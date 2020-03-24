@@ -13,6 +13,7 @@ GeometryFactory::GeometryFactory() {
 	line_ids.rehash(500000);
 	circles.reserve(500000);
 	circles.rehash(500000);
+	x_max = x_min = y_max = y_min = 0.0;
 }
 
 int GeometryFactory::addLine(int type, long long x1, long long x2, long long y1, long long y2) {
@@ -72,6 +73,7 @@ int GeometryFactory::addLine(int type, long long x1, long long x2, long long y1,
 
 	line_ids.insert({ line_counter, l });
 	line_counter += 2;
+	
 	return line_counter - 2;
 }
 
@@ -111,6 +113,7 @@ int GeometryFactory::addCircle(long long x, long long y, long long r) {
 	circles.insert(c);
 	circle_ids.insert({ circle_counter, c });
 	circle_counter += 2;
+	
 	return circle_counter - 2;
 }
 
@@ -199,17 +202,14 @@ void GeometryFactory::remove(int id) {
 	}
 }
 
-void GeometryFactory::getPoints(double *px, double *py, int count)
+vector<Point> GeometryFactory::getPoints()
 {
-	int j = 0;
+	vector<Point> re;
+
 	for (PointMap::iterator i = points.begin(); i != points.end(); ++i) {
-		px[j] = i->first->x;
-		py[j] = i->first->y;
-		++j;
-		if (j == count) {
-			break;
-		}
+		re.push_back(*i->first);
 	}
+	return re;
 }
 
 int GeometryFactory::getPointsCount()
@@ -230,6 +230,22 @@ void GeometryFactory::increase_point(Point* point) {
 	else {
 		// points[point] = 1;
 		points.insert({ new Point(point->x, point->y), 1 });
+		if (is_init) {
+			x_min = x_max = point->x;
+			y_min = y_max = point->y;
+			is_init = false;
+		} else if (point->x < x_min) {
+			x_min = point->x;
+		}
+		else if (point->x > x_max) {
+			x_max = point->x;
+		}
+		if (point->y < y_min) {
+			y_min = point->y;
+		}
+		else if (point->y > y_max) {
+			y_max = point->y;
+		}
 	}
 }
 
@@ -241,6 +257,26 @@ void GeometryFactory::decrease_point(Point* p) {
 			p = value->first;
 			points.erase(value);
 			delete p;
+			x_max = x_min = y_max = y_min = 0.0;
+			if (points.size() != 0) {
+				x_max = x_min = points.begin()->first->x;
+				y_max = y_min = points.begin()->first->y;
+				for (auto i = points.begin(); i != points.end(); ++i) {
+					if (i->first->x < x_min) {
+						x_min = i->first->x;
+					}
+					else if (i->first->x > x_max) {
+						x_max = i->first->x;
+					}
+					if (i->first->y < y_min) {
+						y_min = i->first->y;
+					}
+					else if (i->first->y > y_max) {
+						y_max = i->first->y;
+					}
+				}
+			}
+			
 		}
 		
 	}
@@ -474,9 +510,8 @@ void GeometryFactory::circle_circle_intersect(Circle &c1, Circle &c2) {
 	
 }
 
-int GeometryFactory::addObjectFromFile(const char* m)
+int GeometryFactory::addObjectFromFile(string & message)
 {
-	string message(m);
 	regex line_pattern("^[R|L|S](\\s[+-]?\\d+){4}$");
 	regex circle_pattern("^C(\\s[+-]?\\d+){3}$");
 	smatch line_results;
@@ -513,4 +548,12 @@ int GeometryFactory::addObjectFromFile(const char* m)
 		return addCircle(a, b, r);
 	}
 	throw WrongFormatException("we got the wrong format input!");
+}
+
+void GeometryFactory::getBounder(vector<double>& ret)
+{
+	ret.push_back(x_min);
+	ret.push_back(y_max);
+	ret.push_back(x_max);
+	ret.push_back(y_min);
 }
