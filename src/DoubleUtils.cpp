@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "DoubleUtils.h"
 
 using namespace std;

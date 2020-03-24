@@ -1,7 +1,8 @@
-#include "stdafx.h"
 #include "GeometryShape.h"
 #include "Constant.h"
 #include "DoubleUtils.h"
+
+using namespace std;
 
 Line::Line(long long x1, long long y1, long long x2, long long y2, int type) {
 	this->x1 = x1;
@@ -25,10 +26,10 @@ Line::Line(long long x1, long long y1, long long x2, long long y2, int type) {
 
 void Line::get_coincident_check_bounding()
 {
-	x_min = std::min(x1, x2);
-	x_max = std::max(x1, x2);
-	y_min = std::min(y1, y2);
-	y_max = std::max(y1, y2);
+	x_min = min(x1, x2);
+	x_max = max(x1, x2);
+	y_min = min(y1, y2);
+	y_max = max(y1, y2);
 	switch (type)
 	{
 	case DOUBLE_INFINITE_LINE:

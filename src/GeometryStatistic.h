@@ -1,9 +1,7 @@
 #pragma once
-#include "stdafx.h"
 #include "Point.h"
 #include "GeometryShape.h"
 #include "Exception.h"
-#include "GeometryCalculator.h"
 #include <vector>
 #include <set>
 #include <map>
@@ -45,7 +43,7 @@ public:
 	/* Query */
 	Line getLine(int id);										// Update
 	Circle getCircle(int id);									// For Update
-	vector<Point> getPoints();									// 
+	void getPoints(double *px, double *py, int count);									// 
 	int getPointsCount();										// Update
-	int addObjectFromFile(string & message);							// Input File name point
+	int addObjectFromFile(const char* message);							// Input File name point
 };

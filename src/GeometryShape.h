@@ -1,6 +1,5 @@
 #pragma once
 #include "Point.h"
-#include "stdafx.h"
 #include <cmath>
 #include "DoubleUtils.h"
 #include "Constant.h"

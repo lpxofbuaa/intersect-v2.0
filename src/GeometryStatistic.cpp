@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "GeometryStatistic.h"
 #include <iostream>
 #include <sstream>
@@ -200,14 +199,17 @@ void GeometryFactory::remove(int id) {
 	}
 }
 
-vector<Point> GeometryFactory::getPoints()
+void GeometryFactory::getPoints(double *px, double *py, int count)
 {
-	vector<Point> re;
-
+	int j = 0;
 	for (PointMap::iterator i = points.begin(); i != points.end(); ++i) {
-		re.push_back(*i->first);
+		px[j] = i->first->x;
+		py[j] = i->first->y;
+		++j;
+		if (j == count) {
+			break;
+		}
 	}
-	return re;
 }
 
 int GeometryFactory::getPointsCount()
@@ -472,8 +474,9 @@ void GeometryFactory::circle_circle_intersect(Circle &c1, Circle &c2) {
 	
 }
 
-int GeometryFactory::addObjectFromFile(string & message)
+int GeometryFactory::addObjectFromFile(const char* m)
 {
+	string message(m);
 	regex line_pattern("^[R|L|S](\\s[+-]?\\d+){4}$");
 	regex circle_pattern("^C(\\s[+-]?\\d+){3}$");
 	smatch line_results;

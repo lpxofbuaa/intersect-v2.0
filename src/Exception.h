@@ -1,5 +1,4 @@
 #pragma once
-#include "stdafx.h"
 #include <exception>
 #include <string>
 #include "GeometryShape.h"

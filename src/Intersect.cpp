@@ -1,9 +1,8 @@
-﻿#include "stdafx.h"
-#include <iostream>
+﻿#include <iostream>
 #include <cstdio>
-#include "GeometryCalculator.h"
+#include "GeometryCore.h"
 #include "Reader.h"
-//#pragma comment(lib,"GeometryCore.lib")
+
 
 using namespace std;
 

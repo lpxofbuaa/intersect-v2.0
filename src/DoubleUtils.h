@@ -1,5 +1,4 @@
 #pragma once
-#include "stdafx.h"
 #include <algorithm>
 #include "Constant.h"
 #include <cmath>

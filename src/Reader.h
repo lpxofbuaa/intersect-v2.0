@@ -5,6 +5,7 @@
 #include <vector>
 #include "GeometryShape.h"
 #include "GeometryStatistic.h"
+#include "GeometryCore.h"
 
 using namespace std;
 

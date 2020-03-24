@@ -1,9 +1,8 @@
-#include "stdafx.h"
 #include "Reader.h"
 #include <regex>
 #include <sstream>
 #include <cstdio>
-//#pragma comment(lib,"GeometryCore.lib")
+#include "GeometryCore.h"
 
 Reader::Reader(int ac, char* av[], GeometryFactory *gg) {
 	g = gg;
@@ -90,7 +89,7 @@ void Reader::exec() {
 		++lines;
 		getline(cin, line);
 		try {
-			this->g->addObjectFromFile(line);
+			this->g->addObjectFromFile(line.c_str());
 		}
 		catch (exception &e) {
 			error_handle("We got something wrong at line " + to_string(lines) + ":\n\t" + string(e.what()));
@@ -114,11 +113,13 @@ void Reader::dump() {
 }
 
 void Reader::debug() {
-	vector<Point> results = g->getPoints();
-	cout << results.size() << endl;
+	double *px = new double[g->getPointsCount()];
+	double *py = new double[g->getPointsCount()];
+	g->getPoints(px, py, g->getPointsCount());
+ 	// cout << results.size() << endl;
 	//cout << g->getPointsCount() << endl;
-	for (auto i = results.begin(); i != results.end(); ++i) {
+	for (auto i = 0; i != g->getPointsCount(); ++i) {
 		// printf("??\n");
-		printf("%.3lf,%.3lf\n", i->x, i->y);
+		printf("%.3lf,%.3lf\n", px[i], py[i]);
 	}
 }
