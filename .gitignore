@@ -2,3 +2,9 @@
 *.user
 *.jpg
 *.png
+*.pro
+backup/
+export/
+lib_backup/
+lib_backup1/
+lib_backup2/

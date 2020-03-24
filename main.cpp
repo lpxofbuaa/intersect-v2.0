@@ -37,6 +37,5 @@ int main(int argc, char *argv[])
   // w.show();
   SuperWindow w;
   w.show();
-  
   return a.exec();
 }

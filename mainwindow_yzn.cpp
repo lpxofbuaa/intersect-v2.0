@@ -1,4 +1,5 @@
  #include "mainwindow.h"
+ #include "ui_mainwindow.h"
  #include <math.h>
 
 // === BEGIN ===
@@ -8,41 +9,90 @@
 */
 void MainWindow::software_init(){
     // initial graph_count
-    this->graph_count = 0;
-    // set axis scale automatically change. 
-    connect(customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), customPlot->xAxis2, SLOT(setRange(QCPRange)));
-    connect(customPlot->yAxis, SIGNAL(rangeChanged(QCPRange)), customPlot->yAxis2, SLOT(setRange(QCPRange)));
+    this->graph_count = 1;
+    // initial
+    setWindowTitle("Intersect");
+    statusBar()->clearMessage();
+    ui->customPlot->replot();
+
+    // set scale automatical change
+    ui->customPlot->addGraph();
+    ui->customPlot->addGraph();
+    connect(ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), ui->customPlot->xAxis2, SLOT(setRange(QCPRange)));
+    connect(ui->customPlot->yAxis, SIGNAL(rangeChanged(QCPRange)), ui->customPlot->yAxis2, SLOT(setRange(QCPRange)));
+
+    this->x_min = -15;
+    this->y_min = -15;
+    this->x_max = 15;
+    this->y_max = 15;
+}
+
+void MainWindow::reset_scale()
+{
+    x_min = -15;
+    x_max = 15;
+    y_min = -15;
+    y_max = 15;
 }
 
 /*
- * FUNC: Given all the intersects in vector, update it in the graph(0)
+ * FUNC: Given all the intersects, update it in the graph(0)
 */
-int MainWindow::refresh_intersects(std::vector<Point> intersects){
-    customPlot->graph(0)->setPen(QColor(0, 0, 255, 20));
-    customPlot->graph(0)->setLineStyle(QCPGraph::lsNone);
-    customPlot->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 4));
+int MainWindow::plot_intersects(double* x, double* y, int count){
+    cout << "Plot Intersects " << count << endl;
+    ui->customPlot->graph(0)->setPen(QColor(255, 0, 0));
+    ui->customPlot->graph(0)->setLineStyle(QCPGraph::lsNone);
+    ui->customPlot->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 5));
 
-    QVector<double> x, y; 
-    for(auto it = intersects.begin(); it != intersects.end(); it++){
-        x.push_back((*it).x);
-        y.push_back((*it).y);
+    QVector<double> vx, vy;
+    for(int i = 0; i < count; i++){
+        if(in_scale(x[i], y[i])){
+            vx.push_back(x[i]);
+            vy.push_back(y[i]);
+        }
     }
+    ui->customPlot->graph(0)->setData(vx, vy);
 
-    customPlot->graph(0)->setData(x, y);
-    return 1;
+    // ui->customPlot->graph(0)->rescaleAxes(true);
+    ui->customPlot->replot();
+
+    return 0;
+}
+
+/*
+ * Plot transparent box to fit entire box.
+*/
+int MainWindow::plot_transparent_box()
+{
+    cout << x_max << " " << y_max << " " << x_min << " " << y_min << endl;
+    ui->customPlot->graph(1)->setPen(QColor(0, 0, 0, 0));
+    ui->customPlot->graph(1)->setLineStyle(QCPGraph::lsNone);
+    QVector<double> vx, vy;
+    vx.push_back(x_max);vy.push_back(y_max);
+    vx.push_back(x_min);vy.push_back(y_min);
+    ui->customPlot->graph(1)->setData(vx, vy);
+
+    ui->customPlot->graph(1)->rescaleAxes();
+    ui->customPlot->replot();
+
+    return 0;
+}
+
+int MainWindow::add_one_line(int id){
+    this->id_graph[id] = this->graph_count + 1;
+    this->graph_count += 2;
+
+    ui->customPlot->addGraph();
+    ui->customPlot->addGraph();
+    return 0;
 }
 
 /*
  * FUNC: Give a line and its core id, allocate a new graph for it and paint it on the graph.
 */
-int MainWindow::add_one_line(Line l, int id){
-    this->graph_count += 1;
-    this->id_graph[id] = this->graph_count;
-
-    customPlot->addGraph();
-
-    long long min_bound, max_bound;
-    long first_cor, second_cor;
+int MainWindow::plot_one_line(Line l, int id){
+    double min_bound, max_bound;
+    double first_cor, second_cor;
     // check if k exist. 
     if(l.x1 == l.x2){
         first_cor = l.y1;
@@ -52,23 +102,23 @@ int MainWindow::add_one_line(Line l, int id){
     }
     else{
         first_cor = l.x1;
-        first_cor = l.x2;
+        second_cor = l.x2;
         min_bound = this->x_min;
         max_bound = this->x_max;
     }
     
     // finite line
-    if(l.type == 3){
+    if(l.type == LIMITED_LINE){
         min_bound = (first_cor > second_cor) ? second_cor : first_cor;
         max_bound = (first_cor > second_cor) ? first_cor : second_cor;
     }
     // single infinite line
-    else if(l.type == 2){
+    else if(l.type == SINGLE_INFINITE_LINE){
         min_bound = (first_cor > second_cor) ? min_bound : first_cor;
         max_bound = (first_cor > second_cor) ? first_cor : max_bound;
     }
     // double infinite line
-    else if(l.type == 1){
+    else if(l.type == DOUBLE_INFINITE_LINE){
         // the bigget range, so ignore.
     }
 
@@ -78,36 +128,77 @@ int MainWindow::add_one_line(Line l, int id){
         y.push_back(max_bound); x.push_back(l.x2);
     }
     else{
-        x.push_back(min_bound); y.push_back(min_bound * l.k.k + l.k.b);
-        x.push_back(max_bound); y.push_back(max_bound * l.k.k + l.k.b);
+        // to make sure line in the scale, must choose the small one.
+        x.push_back(min_bound);
+        y.push_back(min_bound * l.k.k + l.k.b);
+//        if(in_scale(min_bound, min_bound * l.k.k + l.k.b)){
+
+//        }
+//        else{
+//            x.push_back((y_min - l.k.b)/l.k.k);
+//            y.push_back(y_min);
+//        }
+        x.push_back(max_bound);
+        y.push_back(max_bound * l.k.k + l.k.b);
+//        if(in_scale(max_bound, max_bound * l.k.k + l.k.b)){
+
+//        }
+//        else{
+//            x.push_back((y_max - l.k.b) / l.k.k);
+//            y.push_back(y_max);
+//        }
     }
 
-    this->customPlot->graph(this->graph_count)->setData(x, y);
-    customPlot->graph(this->graph_count)->rescaleAxes();
+    ui->customPlot->graph(id_graph[id])->setData(x, y);
+    // ui->customPlot->graph(id_graph[id])->rescaleAxes(true);
+    // ui->customPlot->graph(id_graph[id] + 1)->rescaleAxes(true);
 
-    return 1;
+    ui->customPlot->replot();
+
+    return 0;
+}
+
+int MainWindow::add_one_circle(int id){
+    this->id_graph[id] = this->graph_count + 1;
+    this->graph_count += 2;
+    ui->customPlot->addGraph();
+    ui->customPlot->addGraph();
+
+    return 0;
 }
 
 /*
  * FUNC: Given a circle, allocate a new graph and paint it on the graph. 
 */
-int MainWindow::add_one_circle(Circle c, int id){
-    this->graph_count += 1;
-    this->id_graph[id] = this->graph_count;
-
-    this->customPlot->addGraph();
-
-    QVector<double> x, y;
-    for(int angle = 0; angle <= 360; angle++){
-        double rel_x = cos(angle * 1.0 / 360 * 3.14159265);
-        double rel_y = sin(angle * 1.0 / 360 * 3.14159265);
-        x.push_back(double(c.a) + rel_x);
-        y.push_back(double(c.b) + rel_y);
+int MainWindow::plot_one_circle(Circle c, int id){
+    QVector<double> x_up, y_up;
+    for(int angle = 0; angle <= 180; angle++){
+        double rel_x = c.r * cos((angle * 1.0) / 180 * 3.14159265);
+        double rel_y = c.r * sin((angle * 1.0) / 180 * 3.14159265);
+        if(in_scale(rel_x + c.a, rel_y + c.b)){
+            x_up.push_back(double(c.a) + rel_x);
+            y_up.push_back(double(c.b) + rel_y);
+        }
     }
+    ui->customPlot->graph(id_graph[id])->setData(x_up, y_up);
 
-    this->customPlot->graph(this->graph_count)->setData(x, y);
+    QVector<double> x_down, y_down;
+    for(int angle = 180; angle <= 360; angle++){
+        double rel_x = c.r * cos((angle * 1.0) / 180 * 3.14159265);
+        double rel_y = c.r * sin((angle * 1.0) / 180 * 3.14159265);
+        if(in_scale(rel_x + c.a, rel_y + c.b)){
+            x_down.push_back(double(c.a) + rel_x);
+            y_down.push_back(double(c.b) + rel_y);
+        }
+    }
+    ui->customPlot->graph(id_graph[id] + 1)->setData(x_down, y_down);
 
-    return 1;
+    // ui->customPlot->graph(id_graph[id])->rescaleAxes(true);
+    // ui->customPlot->graph(id_graph[id] + 1)->rescaleAxes(true);
+
+    ui->customPlot->replot();
+
+    return 0;
 }
 
 /*
@@ -116,19 +207,72 @@ int MainWindow::add_one_circle(Circle c, int id){
 int MainWindow::remove_object(int id){
     int graph_id = id_graph[id];
     QVector<double> a(0), b(0);
-    this->customPlot->graph(graph_id)->setData(a, b);
-    return 1;
+    ui->customPlot->graph(graph_id)->setData(a, b);
+    ui->customPlot->graph(graph_id + 1)->setData(a, b);
+    id_graph[id] = -1;
+    return 0;
 }
 
 // private
 /*
  * FUNC: Given intersects, update plot axis scale automatically. 
 */
-void MainWindow::update_scale_by_intersects(vector<Point> intersect){
-    for(auto it = intersect.begin(); it != intersect.end(); it++){
-        this->x_max = (this->x_max < (*it).x) ? (*it).x : this->x_max;
-        this->x_min = (this->x_min > (*it).x) ? (*it).x : this->x_min;
-        this->y_max = (this->y_max < (*it).y) ? (*it).y : this->y_max;
-        this->y_min = (this->y_min > (*it).y) ? (*it).y : this->y_min;
+void MainWindow::update_scale_by_intersects(double* x, double* y, int count){
+    for(int i = 0; i < count; i++){
+        double _x = x[i];
+        double _y = y[i];
+        this->x_max = (this->x_max < _x) ? _x : this->x_max;
+        this->x_min = (this->x_min > _x) ? _x : this->x_min;
+        this->y_max = (this->y_max < _y) ? _y : this->y_max;
+        this->y_min = (this->y_min > _y) ? _y : this->y_min;
     }
+    double real_max = std::max(this->x_max, this->y_max);
+    real_max = std::max(real_max, std::max(-this->x_min, -this->y_min));
+    this->x_max = real_max;
+    this->x_min = -real_max;
+    this->y_max = real_max;
+    this->y_min = -real_max;
+}
+
+void MainWindow::update_scale_by_line(Line l)
+{
+    x_max = std::max(x_max, double(std::max(l.x1, l.x2)));
+    x_min = std::min(x_min, double(std::min(l.x1, l.x2)));
+    y_max = std::max(y_max, double(std::max(l.y1, l.y2)));
+    y_min = std::min(y_min, double(std::min(l.y1, l.y2)));
+
+    double real_max = std::max(x_max, y_max);
+    real_max = std::max(real_max, std::max(-x_min, -y_min));
+    x_max = real_max;
+    x_min = -real_max;
+    y_max = real_max;
+    y_min = -real_max;
+}
+
+void MainWindow::update_scale_by_circle(Circle c)
+{
+    x_max = std::max(x_max, double(c.a + c.r));
+    x_min = std::min(x_min, double(c.a - c.r));
+    y_max = std::max(y_max, double(c.b + c.r));
+    y_min = std::min(y_min, double(c.b - c.r));
+
+    double real_max = std::max(x_max, y_max);
+    real_max = std::max(real_max, std::max(-x_min, -y_min));
+    x_max = real_max;
+    x_min = -real_max;
+    y_max = real_max;
+    y_min = -real_max;
+}
+
+void MainWindow::smooth_scale()
+{
+    x_max *= 1.5;
+    y_max *= 1.5;
+    x_min *= 1.5;
+    y_min *= 1.5;
+}
+
+bool MainWindow::in_scale(double x, double y)
+{
+    return (x_min <= x+0.1 && x-0.1 <= x_max && y_min+0.1 <= y && y-0.1 <= y_max);
 }

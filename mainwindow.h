@@ -42,13 +42,13 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "export/lib/GeometryCore.h"
+#include "GeometryCore.h"
 #include <QMainWindow>
 #include <QTimer>
 #include <map>
 #include <vector>
-#include "../../qcustomplot.h" // the header file of QCustomPlot. Don't forget to add it to your project, if you use an IDE, so it gets compiled.
-#pragma comment(lib,"export/lib/GeometryCore.lib")
+#include "qcustomplot.h" // the header file of QCustomPlot. Don't forget to add it to your project, if you use an IDE, so it gets compiled.
+// #pragma comment(lib,"export/lib/GeometryCore.lib")
 
 namespace Ui {
 class MainWindow;
@@ -69,16 +69,25 @@ public:
   GeometryFactory* intersect;
   map<int, int> id_graph;
   int graph_count;  // to count graphs, each graph contains a_line/a_circle/all_intersects.
-  long long x_max, x_min, y_max, y_min;
+  double x_max, x_min, y_max, y_min;
 
-  int refresh_intersects(std::vector<Point> intersects);
-  int add_one_line(Line l, int id);
-  int add_one_circle(Circle c, int id);
+  int add_one_line(int id);
+  int add_one_circle(int id);
+  int plot_one_line(Line l, int id);
+  int plot_one_circle(Circle c, int id);
+  int plot_intersects(double* x, double* y, int count);
+  int plot_transparent_box();
   int remove_object(int id);
 
   // private
   void software_init();
-  void update_scale_by_intersects(vector<Point> intersect);
+  void reset_scale();
+  void update_scale_by_intersects(double* x, double* y, int count);
+  void update_scale_by_line(Line l);
+  void update_scale_by_circle(Circle c);
+  void smooth_scale();
+  bool in_scale(double x, double y);
+
   // ===  END  ===
 
   explicit MainWindow(GeometryFactory* intersect, QWidget *parent = 0);

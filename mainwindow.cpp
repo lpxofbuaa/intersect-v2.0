@@ -40,7 +40,7 @@
 *************************************************************************************************************/
 
 #include "mainwindow.h"
-#include "../build-plot-examples-Desktop_Qt_5_14_1_MinGW_64_bit-Debug/ui_mainwindow.h"
+#include "ui_mainwindow.h"
 #include <QDebug>
 #include <QDesktopWidget>
 #include <QScreen>
@@ -53,9 +53,9 @@ MainWindow::MainWindow(GeometryFactory* intersect, QWidget *parent) :
   ui(new Ui::MainWindow)
 {
   ui->setupUi(this);
-  setGeometry(400, 250, 542, 390);
-  setupDemo(20);
-  software_init();  
+  setGeometry(400, 400, 542, 542);
+  // setupDemo(20);
+  software_init();
   // for making screenshots of the current demo or all demos (for website screenshots):
   //QTimer::singleShot(1500, this, SLOT(allScreenShots()));
   //QTimer::singleShot(4000, this, SLOT(screenShot()));
@@ -151,8 +151,8 @@ void MainWindow::setupSimpleDemo(QCustomPlot *customPlot)
   customPlot->addGraph();
   customPlot->graph(1)->setPen(QPen(Qt::red)); // line color red for second graph
   // generate some points of data (y0 for first, y1 for second graph):
-  QVector<double> x(251), y0(251), y1(251);
-  for (int i=0; i<251; ++i)
+  QVector<double> x(500), y0(500), y1(500);
+  for (int i=0; i<500; ++i)
   {
     x[i] = i;
     y0[i] = qExp(-i/150.0)*qCos(i/10.0); // exponentially decaying cosine
